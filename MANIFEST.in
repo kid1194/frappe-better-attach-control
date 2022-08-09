@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include frappe_better_attach_control *.css
+recursive-include frappe_better_attach_control *.csv
+recursive-include frappe_better_attach_control *.html
+recursive-include frappe_better_attach_control *.ico
+recursive-include frappe_better_attach_control *.js
+recursive-include frappe_better_attach_control *.json
+recursive-include frappe_better_attach_control *.md
+recursive-include frappe_better_attach_control *.png
+recursive-include frappe_better_attach_control *.py
+recursive-include frappe_better_attach_control *.svg
+recursive-include frappe_better_attach_control *.txt
+recursive-exclude frappe_better_attach_control *.pyc
