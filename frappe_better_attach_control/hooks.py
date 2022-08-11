@@ -18,7 +18,13 @@ is_frappe_above_v13 = int(frappe_version.split('.')[0]) > 13
 # app_include_css = "/assets/frappe_better_attach_control/css/select.css"
 # app_include_js = "/assets/frappe_better_attach_control/js/select.js"
 
-app_include_js = ['better_attach.bundle.js'] if is_frappe_above_v13 else ['/assets/frappe_better_attach_control/js/better_attach.js']
+app_include_js = [
+    'better_attach.bundle.js',
+    'better_attach_image.bundle.js'
+] if is_frappe_above_v13 else [
+    '/assets/frappe_better_attach_control/js/better_attach.js',
+    '/assets/frappe_better_attach_control/js/better_attach_image.js'
+]
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "frappe_better_attach_control/public/scss/website"
