@@ -1,4 +1,8 @@
 frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.ControlAttach {
+    on_attach_click() {
+		this.set_upload_options();
+		this.file_uploader = new frappe.ui.FileUploader(this.upload_options);
+	}
     on_attach_doc_image() {
         this.set_upload_options();
         if (this.upload_options.restrictions.allowed_file_types == null) {
