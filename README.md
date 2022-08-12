@@ -3,9 +3,9 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ### Table of Contents
 <ul>
-    <li><a href="#Requirements">Requirements</a></li>
+    <li><a href="#requirements">Requirements</a></li>
     <li>
-        <a href="#Setup">Setup</a>
+    <a href="#setup">Setup</a>
         <ul>
             <li><a href="#install">Install</a></li>
             <li><a href="#update">Update</a></li>
@@ -15,6 +15,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
     <li><a href="#usage">Usage</a></li>
     <li><a href="#available-options">Available Options</a></li>
     <li><a href="#supported-fields">Supported Fields</a></li>
+    <li><a href="#todo">ToDo</a></li>
     <li><a href="#license">License</a></li>
 </ul>
 
@@ -86,6 +87,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
         <td><code>allow_multiple</code></td>
         <td>
             <p>Allow multiple uploads.</p>
+            <p><i>(Not fully supported)</i></p>
             <p><i>Default: <code>false</code></i></p>
         </td>
     </tr>
@@ -102,7 +104,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
         <td>
             <p>Array of allowed file types (mimes) or extensions to upload.</p>
             <p><i>Example: <code>["image/*", "video/*", ".pdf", ".doc"]</code></i></p>
-            <p><i>Default: <code>["image/*"]</code></i></p>
+            <p><i>Default: <code>null</code> or <code>["image/*"]</code></i></p>
         </td>
     </tr>
     <tr>
@@ -117,7 +119,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
         <td><code>crop_image_aspect_ratio</code></td>
         <td>
             <p>Crop aspect ratio for images (Frappe >= v14.0.0).</p>
-            <p><i>Example: <code>1</code> or <code>16 / 9</code> or <code>4 / 3</code></i></p>
+            <p><i>Example: <code>1</code> or <code>16/9</code> or <code>4/3</code></i></p>
             <p><i>Default: <code>1</code></i></p>
         </td>
     </tr>
@@ -128,6 +130,12 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 ### Supported Fields
 - Attach
 - Attach Image
+
+---
+
+### ToDo
+- HTML display for multiple files upload in `Attach` control
+- Display popover for multiple files upload in `Attach Image` control
 
 ---
 
