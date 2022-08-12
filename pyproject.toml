@@ -1,6 +1,6 @@
 [project]
 name = "frappe_better_attach_control"
-version = "1.0.3"
+version = "1.1.0"
 authors = [
     {name = "Ameen Ahmed (Level Up)", email = "kid1194@gmail.com"}
 ]
