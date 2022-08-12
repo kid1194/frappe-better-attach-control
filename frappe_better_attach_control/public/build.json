@@ -1,0 +1,4 @@
+{
+  "js/better_attach.js": ["public/js/better_attach.bundle.js"],
+  "js/better_attach_image.js": ["public/js/better_attach_image.bundle.js"]
+}
