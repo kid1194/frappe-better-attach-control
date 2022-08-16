@@ -87,7 +87,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
         <td><code>allow_multiple</code></td>
         <td>
             <p>Allow multiple uploads.</p>
-            <p>⚠️<i>(Not fully supported)</i></p>
+            <p>⚠️<i>(Field value is a JSON array of files url)</i></p>
             <p><i>Default: <code>false</code></i></p>
         </td>
     </tr>
@@ -111,7 +111,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
         <td><code>max_number_of_files</code></td>
         <td>
             <p>Maximum number of files allowed to be uploaded if multiple upload is allowed.</p>
-            <p>⚠️<i>(Must be lower than the maximum attachments of doctype)</i></p>
+            <p>⚠️<i>(Bypassing the maximum attachments of doctype might not work)</i></p>
             <p><i>Example: <code>4</code></i></p>
             <p><i>Default: <code>Value of maximum attachments set for the doctype</code></i></p>
         </td>
@@ -135,8 +135,10 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 ---
 
 ### ToDo
-- HTML display for multiple files upload in `Attach` control
-- Display popover for multiple files upload in `Attach Image` control
+<ul>
+    <li><del>HTML display for multiple files upload in <code>Attach</code> control</del></li>
+    <li><del>Display popover for multiple files upload in <code>Attach Image</code> control</del></li>
+</ul>
 
 ---
 
