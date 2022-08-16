@@ -1,27 +1,35 @@
-frappe.ui.form.ControlAttachImage = class ControlAttachImage extends frappe.ui.form.ControlAttachImage {
-    make_input() {
-        super.make_input();
-        if (!this.__is_custom) {
-            console.error('The Attach Image control doesn\'t extend the plugin Attach control.');
+import isArray from './utils/check';
+import to_images_list from './utils/mime';
+
+frappe.provide('frappe.ui.form');
+
+frappe.ui.form.ControlAttachImage = class ControlAttachImage extends frappe.ui.form.ControlAttach {
+    set_upload_options() {
+        super.set_upload_options();
+        if (isArray(this.upload_options.restrictions.allowed_file_types)) {
+            this.upload_options.restrictions.allowed_file_types = to_images_list(
+                this.upload_options.restrictions.allowed_file_types
+            );
+        } else {
+            this.upload_options.restrictions.allowed_file_types = ['image/*'];
         }
-        
-        // @todo: Bellow support for multiple files upload
-        /*let $file_link = this.$value.find('.attached-file-link');
+    }
+    _make_value_dom() {
+        super._make_value_dom();
+        let val = this._value_to_array(this.value).pop();
+        let $file_link = this.$value.find('.attached-file-link');
         $file_link.popover({
             trigger: 'hover',
             placement: 'top',
             content: () => {
                 return `<div>
-                    <img src="${this.get_value()}"
+                    <img src="${val}"
                         width="150px"
                         style="object-fit: contain;"
                     />
                 </div>`;
             },
             html: true
-        });*/
-    }
-    set_upload_options() {
-        super.set_upload_options();
+        });
     }
 };
