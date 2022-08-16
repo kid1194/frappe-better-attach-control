@@ -1,7 +1,3 @@
-import {
-    isArray
-} from './check';
-
 var LIST = {
     '3ds'        : 'image/x-3ds',
     'apng'       : 'image/apng',
