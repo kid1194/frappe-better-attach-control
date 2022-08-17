@@ -1,9 +1,9 @@
 import {
     isArray,
     isDataObject,
-    deepCloneObject
-} from './utils/check.js';
-import {to_images_list} from './utils/mime.js';
+    deepCloneObject,
+    to_images_list
+} from './utils';
 
 frappe.provide('frappe.ui.form');
 
