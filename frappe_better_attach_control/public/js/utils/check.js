@@ -47,6 +47,15 @@ function isArray(v) {
     return isFunction(Array.isArray) ? Array.isArray(v) : ofType(v, 'Array') && ofType(v.length, 'Number');
 }
 
+function deepCloneObject(v) {
+    var ret = {};
+    for (var k in v) {
+        if (isDataObject(v[k])) ret[k] = deepCloneObject(v[k]);
+        else ret[k] = v[k];
+    }
+    return ret;
+}
+
 export {
     isVal,
     getType,
@@ -58,5 +67,6 @@ export {
     isObjectLike,
     isObject,
     isDataObject,
-    isArray
+    isArray,
+    deepCloneObject
 };
