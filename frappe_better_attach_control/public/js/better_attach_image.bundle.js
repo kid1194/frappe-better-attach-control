@@ -1,18 +1,9 @@
-import isArray from './utils/check';
-import to_images_list from './utils/mime';
-
 frappe.provide('frappe.ui.form');
 
 frappe.ui.form.ControlAttachImage = class ControlAttachImage extends frappe.ui.form.ControlAttach {
-    set_upload_options() {
-        super.set_upload_options();
-        if (isArray(this.upload_options.restrictions.allowed_file_types)) {
-            this.upload_options.restrictions.allowed_file_types = to_images_list(
-                this.upload_options.restrictions.allowed_file_types
-            );
-        } else {
-            this.upload_options.restrictions.allowed_file_types = ['image/*'];
-        }
+    _parse_options() {
+        if (!this._is_better) this._images_only = true;
+        super._parse_options();
     }
     _make_value_dom() {
         super._make_value_dom();
@@ -22,12 +13,7 @@ frappe.ui.form.ControlAttachImage = class ControlAttachImage extends frappe.ui.f
             trigger: 'hover',
             placement: 'top',
             content: () => {
-                return `<div>
-                    <img src="${val}"
-                        width="150px"
-                        style="object-fit: contain;"
-                    />
-                </div>`;
+                return '<div><img src="${val}" width="150px" style="object-fit: contain;"/></div>';
             },
             html: true
         });
