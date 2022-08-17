@@ -59,6 +59,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         }
     }
     make_input() {
+        this._parse_options();
         $log('Making attachment button');
         let me = this;
         this.$input = $('<button class="btn btn-default btn-sm btn-attach">')
