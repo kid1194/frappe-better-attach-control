@@ -1,8 +1,9 @@
 import {
     isArray,
-    isDataObject
-} from './utils/check';
-import to_images_list from './utils/mime';
+    isDataObject,
+    deepCloneObject
+} from './utils/check.js';
+import {to_images_list} from './utils/mime.js';
 
 frappe.provide('frappe.ui.form');
 
@@ -21,12 +22,11 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             this._allow_multiple = false;
             this._max_number_of_files = 0;
         }
-        if (this.df._is_better) return;
+        if (isDataObject(this.df.options)) return;
         if (frappe.utils.is_json(this.df.options)) {
             this.df.options = frappe.utils.parse_json(this.df.options);
             if (isDataObject(this.df.options)) {
                 $log('Parsing options');
-                this.df._is_better = true;
                 var opts = {restrictions: {}},
                 keys = ['upload_notes', 'allow_multiple', 'max_file_size', 'allowed_file_types', 'max_number_of_files', 'crop_image_aspect_ratio'];
                 for (var k in this.df.options) {
@@ -36,6 +36,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                         else opts.restrictions[k] = this.df.options[k];
                     }
                 }
+                if (this._images_only) this._parse_image_types(opts);
                 this.df.options = opts;
                 this._allow_multiple = opts.allow_multiple || false;
                 this._max_number_of_files = opts.restrictions.max_number_of_files || 0;
@@ -48,6 +49,13 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                     frappe.get_meta(self.doctype).max_attachments = this.frm.meta.max_attachments = this._max_number_of_files;
                 }
             }
+        }
+    }
+    _parse_image_types(opts) {
+        opts.restrictions.allowed_file_types = isArray(opts.restrictions.allowed_file_types)
+            ? to_images_list(opts.restrictions.allowed_file_types) : [];
+        if (!opts.restrictions.allowed_file_types.length) {
+            opts.restrictions.allowed_file_types = ['image/*'];
         }
     }
     make_input() {
@@ -123,21 +131,15 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     on_attach_doc_image() {
         $log('Attaching image');
         this.set_upload_options();
-        if (isArray(this.upload_options.restrictions.allowed_file_types)) {
-            this.upload_options.restrictions.allowed_file_types = to_images_list(
-                this.upload_options.restrictions.allowed_file_types
-            );
-        } else {
-            this.upload_options.restrictions.allowed_file_types = ['image/*'];
+        if (!this.image_upload_options.restrictions.crop_image_aspect_ratio) {
+            this.image_upload_options.restrictions.crop_image_aspect_ratio = 1;
         }
-        if (!this.upload_options.restrictions.crop_image_aspect_ratio) {
-            this.upload_options.restrictions.crop_image_aspect_ratio = 1;
-        }
-        this.file_uploader = new frappe.ui.FileUploader(this.upload_options);
+        this.file_uploader = new frappe.ui.FileUploader(this.image_upload_options);
     }
     set_upload_options() {
         this._parse_options();
         $log('Setting upload options');
+        if (this.upload_options) return;
         let options = {
             allow_multiple: false,
             on_success: file => {
@@ -152,11 +154,13 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             options.fieldname = this.df.fieldname;
         }
         if (isDataObject(this.df.options)) {
-            for (var k in this.df.options) {
-                options[k] = this.df.options[k];
-            }
+            Object.assign(options, this.df.options);
         }
-        this.upload_options = options;
+        this.upload_options = this.image_upload_options = options;
+        if (!this._images_only) {
+            this.image_upload_options = deepCloneObject(options);
+            this._parse_image_types(this.image_upload_options);
+        }
     }
     _value_to_array(value, def) {
         let val = value;
