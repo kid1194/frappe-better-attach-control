@@ -1,1 +1,1 @@
-frappe
+frappe~=13.0.0
