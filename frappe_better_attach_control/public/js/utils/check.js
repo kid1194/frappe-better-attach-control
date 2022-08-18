@@ -36,6 +36,7 @@ function isObject(v) {
     return isObjectLike(v) && isObjectLike(getProtoOf(v) || {})
     && !ofAnyType(v, 'Boolean Number String Array RegExp Date URL');
 }
+
 function isDataObject(v) {
     if (!ofType(v, 'Object')) return false;
     var p = getProtoOf(v), k = 'constructor';
@@ -43,9 +44,11 @@ function isDataObject(v) {
     && Function.prototype.toString.call(p[k]) === Function.prototype.toString.call(Object));
 }
 
-function isArray(v) {
-    return isFunction(Array.isArray) ? Array.isArray(v) : ofType(v, 'Array') && ofType(v.length, 'Number');
+if (!isFunction(Array.isArray)) {
+    Array.isArray = function(v) { return ofType(v, 'Array') && ofType(v.length, 'Number'); };
 }
+
+function isArray(v) { return Array.isArray(v); }
 
 function deepCloneObject(v) {
     var ret = {};
@@ -57,15 +60,6 @@ function deepCloneObject(v) {
 }
 
 export {
-    isVal,
-    getType,
-    ucFirst,
-    ofType,
-    ofAnyType,
-    isString,
-    isFunction,
-    isObjectLike,
-    isObject,
     isDataObject,
     isArray,
     deepCloneObject
