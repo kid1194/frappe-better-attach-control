@@ -8,7 +8,7 @@ requires-python = ">=3.6"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
-    "frappe >=13.0.0"
+    "frappe~=13.0.0"
 ]
 
 [project.urls]
