@@ -3,7 +3,9 @@ import {
     isDataObject,
     deepCloneObject
 } from './utils/check.js';
-import to_images_list from './utils/mime.js';
+import {
+    to_images_list
+} from './utils/mime.js';
 
 frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     init: function(opts) {
