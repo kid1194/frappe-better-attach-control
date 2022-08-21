@@ -42,7 +42,6 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                     else opts.restrictions[k] = this.df.options[k];
                 }
             }
-            if (this._images_only) this._parse_image_types(opts.restrictions);
             this._options = opts;
             this._allow_multiple = opts.allow_multiple || false;
             this._max_number_of_files = opts.restrictions.max_number_of_files || 0;
@@ -202,7 +201,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             Object.assign(options, this._options);
         }
         this.upload_options = this.image_upload_options = options;
-        if (!this._images_only) {
+        if (this._images_only) {
             this.image_upload_options = deepCloneObject(options);
             this._parse_image_types(this.image_upload_options.restrictions);
         }
