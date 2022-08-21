@@ -165,7 +165,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     on_attach_click: function() {
         $log('Attaching file');
         this.set_upload_options();
-        this.file_uploader = new frappe.ui.FileUploader(!this._images_only ? this.upload_options : this.image_upload_options);
+        this.file_uploader = new frappe.ui.FileUploader(this.upload_options);
     },
     set_upload_options: function() {
         this._parse_options();
@@ -187,10 +187,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (isDataObject(this._options)) {
             Object.assign(options, this._options);
         }
-        this.upload_options = this.image_upload_options = options;
+        this.upload_options = options;
         if (this._images_only) {
-            this.image_upload_options = deepCloneObject(options);
-            this._parse_image_types(this.image_upload_options.restrictions);
+            this._parse_image_types(this.upload_options.restrictions);
         }
     },
     _value_to_array: function(value, def) {
