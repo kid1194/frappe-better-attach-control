@@ -171,7 +171,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     on_attach_click() {
         $log('Attaching file');
         this.set_upload_options();
-        this.file_uploader = new frappe.ui.FileUploader(this.upload_options);
+        this.file_uploader = new frappe.ui.FileUploader(!this._images_only ? this.upload_options : this.image_upload_options);
     }
     on_attach_doc_image() {
         $log('Attaching image');
@@ -200,11 +200,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         if (isDataObject(this._options)) {
             Object.assign(options, this._options);
         }
-        this.upload_options = this.image_upload_options = options;
-        if (this._images_only) {
-            this.image_upload_options = deepCloneObject(options);
-            this._parse_image_types(this.image_upload_options.restrictions);
-        }
+        this.upload_options = options;
+        this.image_upload_options = deepCloneObject(options);
+        this._parse_image_types(this.image_upload_options.restrictions);
     }
     _value_to_array(value, def) {
         let val = value;
