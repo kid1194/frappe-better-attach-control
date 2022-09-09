@@ -1,5 +1,8 @@
 # Frappe Better Attach Control
+
 A small plugin for Frappe that adds the support of customizations to the attach control.
+
+---
 
 ### Table of Contents
 <ul>
@@ -15,7 +18,6 @@ A small plugin for Frappe that adds the support of customizations to the attach 
     <li><a href="#usage">Usage</a></li>
     <li><a href="#available-options">Available Options</a></li>
     <li><a href="#supported-fields">Supported Fields</a></li>
-    <li><a href="#todo">ToDo</a></li>
     <li><a href="#license">License</a></li>
 </ul>
 
@@ -28,48 +30,114 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ### Setup
 
+⚠️ *Important* ⚠️
+
+*Do not forget to replace [sitename] with the name of your site in all commands.*
+
 #### Install
-1. Get the plugin from Github
+1. Go to bench directory
+
+```
+cd ~/frappe-bench
+```
+
+2. Get plugin from Github
 
 *(Required only once)*
 
-`bench get-app https://github.com/kid1194/frappe-better-attach-control`
+```
+bench get-app https://github.com/kid1194/frappe-better-attach-control
+```
 
-2. Install the plugin on any instance/site you want
+3. Build plugin
 
-`bench --site [sitename] install-app frappe_better_attach_control`
+*(Required only once)*
 
-3. Check the usage section below
+```
+bench build --apps frappe_better_attach_control
+```
+
+4. Install plugin on a specific site
+
+```
+bench --site [sitename] install-app frappe_better_attach_control
+```
+
+5. Check the usage section below
 
 #### Update
-1. Go to the app directory (frappe-bench/apps/frappe_better_attach_control) and execute:
+1. Go to app directory
 
-`git pull`
+```
+cd ~/frappe-bench/apps/frappe_better_attach_control
+```
 
-2. Go back to the frappe-bench directory and execute:
+2. Get updates from Github
 
-`bench --site [sitename] migrate`
+```
+git pull
+```
 
-3. *In case you need to restart bench, execute:*
+3. Go to bench directory
 
-`bench restart`
+```
+cd ~/frappe-bench
+```
+
+4. Build plugin
+
+```
+bench build --apps frappe_better_attach_control
+```
+
+5. Update a specific site
+
+```
+bench --site [sitename] migrate
+```
+
+6. Restart bench
+
+```
+bench restart
+```
 
 #### Uninstall
-1. Uninstall the plugin from the instance/site
+1. Go to bench directory
 
-`bench --site [sitename] uninstall-app frappe_better_attach_control`
+```
+cd ~/frappe-bench
+```
 
-2. Uninstall the plugin from bench
+2. Uninstall plugin from a specific site
 
-`bench remove-app frappe_better_attach_control`
+```
+bench --site [sitename] uninstall-app frappe_better_attach_control
+```
+
+3. Remove plugin from bench
+
+```
+bench remove-app frappe_better_attach_control
+```
+
+4. Restart bench
+
+```
+bench restart
+```
 
 ---
 
 ### Usage
 1. Go to Customization > Customize Form
 2. Enter the form type/name (Ex: 'User')
-3. Scroll down to the form fields area and edit the `Attach` or `Attach Image` fields you want
-4. In the `options` property of the fields, add a JSON object of the customizations you want. Example: `{"allowed_file_types": ["jpg", "png", "gif"]}`
+3. Scroll down to the form fields area and edit the *Attach* or *Attach Image* fields you want
+4. In the *options* property of the fields, add a JSON object of the customizations you want. Example:
+
+```
+{"allowed_file_types": ["jpg", "png", "gif"]}
+```
 
 ---
 
@@ -131,14 +199,6 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 ### Supported Fields
 - Attach
 - Attach Image
-
----
-
-### ToDo
-<ul>
-    <li><del>HTML display for multiple files upload in <code>Attach</code> control</del></li>
-    <li><del>Display popover for multiple files upload in <code>Attach Image</code> control</del></li>
-</ul>
 
 ---
 

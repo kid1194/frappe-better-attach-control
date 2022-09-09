@@ -4,6 +4,13 @@ authors = [
     {name = "Ameen Ahmed (Level Up)", email = "kid1194@gmail.com"}
 ]
 description = "Frappe attach control that supports customization."
+keywords = ["frappe", "attach", "better attach"]
+license_file = "license.txt"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: JavaScript"
+]
 requires-python = ">=3.6"
 readme = "README.md"
 dynamic = ["version"]

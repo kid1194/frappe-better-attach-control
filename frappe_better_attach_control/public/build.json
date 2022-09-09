@@ -1,4 +1,7 @@
 {
-  "js/better_attach.js": ["public/js/better_attach_v13.bundle.js"],
-  "js/better_attach_image.js": ["public/js/better_attach_image_v13.bundle.js"]
+  "frappe_better_attach_control/js/better_attach.js": [
+    "public/js/controls/better_attach_v13.js",
+    "public/js/controls/better_attach_image_v13.js"
+  ],
+  "frappe_better_attach_control/css/better_attach.css": ["public/css/better_attach.bundle.css"]
 }
