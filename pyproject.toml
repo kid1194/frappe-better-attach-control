@@ -5,9 +5,8 @@ authors = [
 ]
 description = "Frappe attach control that supports customization."
 keywords = ["frappe", "attach", "better attach"]
-license_file = "license.txt"
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: JavaScript"
 ]
