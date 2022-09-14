@@ -1,9 +1,14 @@
-.ba-link {
+.ba-link, .ba-link::hover {
     text-decoration: none;
 }
 .ba-filename {
     color: #000;
     font-size: 1rem;
+    text-align: center;
+}
+.ba-filesize {
+    color: #000;
+    font-size: .7rem;
     text-align: center;
 }
 .ba-file {

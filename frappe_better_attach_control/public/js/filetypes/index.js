@@ -15,7 +15,7 @@ import is_word from './word.js';
 import is_text from './text.js';
 
 export function get_icon_class(url) {
-    let ext = url.split('.').pop();
+    let ext = url.toLowerCase().split('.').pop();
     if (is_audio(ext)) return 'ba-audio';
     if (is_compressed(ext)) return 'ba-compressed';
     if (is_image(ext)) return 'ba-image';

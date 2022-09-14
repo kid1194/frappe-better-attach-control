@@ -5,7 +5,7 @@
 *  Licence: Please refer to license.txt
 */
 
-import deepCloneObject from './../utils';
+import { deepCloneObject, valToArray, formatSize } from './../utils';
 import { get_icon_class, make_images_list } from './../filetypes';
 
 frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
@@ -55,7 +55,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 me.frm.doc.docstatus == 1 ? me.frm.save('Update') : me.frm.save();
             };
             if (this._allow_multiple) {
-                let _vals = this._value_to_array(this.value);
+                let _vals = valToArray(this.value);
                 for (var i = 0, l = _vals.length, last = l - 1; i < l; i++) {
                     this.frm.attachments.remove_attachment_by_filename(_vals[i], i === last ? callback : null);
                 }
@@ -77,11 +77,12 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     set_upload_options: function() {
         this._parse_options();
         if (this.upload_options) return;
+        var me = this;
         let options = {
             allow_multiple: false,
             on_success: function(file) {
-                this.on_upload_complete(file);
-                this.toggle_reload_button();
+                me.on_upload_complete(file);
+                me.toggle_reload_button();
             },
             restrictions: {}
         };
@@ -97,11 +98,11 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (this._images_only) this._parse_image_types(this.upload_options.restrictions);
     },
     set_value: function(value, force_set_value=false) {
-        return this._super(this._append_value(value), force_set_value);
+        return this._super(this._prepare_value(value), force_set_value);
     },
     set_input: function(value, dataurl) {
         if (value) {
-            let _value = this._value_to_array(value, value);
+            let _value = valToArray(value, value, true);
             if (Array.isArray(_value)) {
                 if (!this._allow_multiple) this.set_input(_value[0] || null);
                 else {
@@ -110,18 +111,8 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 }
                 return;
             }
-            if (this._allow_multiple) {
-                let val_len = this._value_to_array(this.value).length;
-                if (this._max_number_of_files && val_len === this._max_number_of_files) {
-                    let err = 'The file was skipped because only {1} uploads are allowed';
-                    if (this.frm) err += ' for DocType "{2}"';
-                    frappe.throw(__(err, [this._max_number_of_files, this.frm.doctype]));
-                    return;
-                }
-                this._append_value(value);
-            } else {
-                this.value = value;
-            }
+            this.value = this._allow_multiple ? this._prepare_value(value) : value;
+            
             this.$input.toggle(false);
             let file_url_parts = value.match(/^([^:]+),(.+):(.+)$/),
             filename = null;
@@ -132,49 +123,44 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             if (!filename) filename = dataurl ? value : value.split('/').pop();
             let $link = this.$value.toggle(true).find('.attached-file-link');
             if (this._allow_multiple) {
-                let val_data = [filename, dataurl || value];
-                if (this._values.indexOf(val_data) < 0) {
-                    this._values.push(val_data);
-                    let file_name = this._values[0][0];
-                    if (this._values.length > 1) {
-                        file_name = this._values.length + ' ' + __('files');
-                    }
-                    $link.html(file_name);
-                }
+                let vals = valToArray(this.value),
+                file_name = filename;
+                if (vals.length > 1) file_name = vals.length + ' ' + __('files');
+                $link.html(file_name);
             } else {
                 $link.html(filename).attr('href', dataurl || value);
             }
         } else {
             this.value = null;
-            this._values = [];
+            this._files = [];
             this.$input.toggle(true);
             this.$value.toggle(false);
         }
     },
     on_upload_complete: function(attachment) {
+        this._add_file(attachment);
         if (this.frm) {
-            this.parse_validate_and_set_in_model(this._append_value(attachment.file_url));
+            this.parse_validate_and_set_in_model(this._prepare_value(attachment.file_url));
             this.frm.attachments.update_attachment(attachment);
             this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
         }
         this.set_value(attachment.file_url);
-    },
-    toggle_reload_button: function() {
-         this.$value.find('[data-action="reload_attachment"]')
-        .toggle(this._values.length > 0);
     },
     _parse_options: function() {
         if (!this._is_better) {
             this._is_better = true;
             this._def_options = null;
             this._options = null;
-            this._values = [];
+            this._files = [];
             this._allow_multiple = false;
-            this._max_number_of_files = 0;
         }
         if (!this.df.options || this.df.options === this._def_options) return;
         if (frappe.utils.is_json(this.df.options)) {
-            this.df.options = JSON.parse(this.df.options);
+            try {
+                this.df.options = JSON.parse(this.df.options);
+            } catch(e) {
+                this.df.options = null;
+            }
         }
         this._def_options = this.df.options;
         if (!$.isPlainObject(this.df.options)) return;
@@ -189,20 +175,21 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         }
         this._options = opts;
         this._allow_multiple = opts.allow_multiple || false;
-        this._max_number_of_files = opts.restrictions.max_number_of_files || 0;
-        if (this.frm && this._allow_multiple && this._max_number_of_files
+        let max_number_of_files = opts.restrictions.max_number_of_files || 0;
+        if (this.frm && this._allow_multiple && max_number_of_files
             && (
-                this._max_number_of_files > frappe.get_meta(this.frm.doctype).max_attachments
-                || this._max_number_of_files > (this.frm.meta.max_attachments || 0)
+                max_number_of_files > frappe.get_meta(this.frm.doctype).max_attachments
+                || max_number_of_files > (this.frm.meta.max_attachments || 0)
             )
         ) {
-            frappe.get_meta(this.frm.doctype).max_attachments = this.frm.meta.max_attachments = this._max_number_of_files;
+            frappe.get_meta(this.frm.doctype).max_attachments = this.frm.meta.max_attachments = max_number_of_files;
         }
     },
     _setup_display: function() {
         if (!this._allow_multiple) {
              if (this._images_only) this._on_setup_display();
         } else {
+            var me = this;
             this.$value.find('.attached-file-link')
             .on('click', function(e) {
                 var dialog = new frappe.ui.Dialog({
@@ -218,33 +205,31 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 );
                 dialog.$wrapper.addClass('modal-dialog-scrollable');
                 dialog.get_primary_btn().removeClass('btn-primary').addClass('btn-danger');
-                me._values.forEach(function(v) {
-                    let name = v[0],
-                    url = v[1],
-                    _class = !me._images_only ? get_icon_class(url) : 'ba-image',
-                    is_image = _class === 'ba-image',
-                    href = url,
-                    attr = '';
-                    if (is_image) {
-                        href = '#';
-                        attr = ' data-ba-image="' + url + '"';
+                me._files.forEach(function(f) {
+                    let href = !f.is_image ? f.url : '#',
+                    attr = '',
+                    meta = '';
+                    if (f.size_str || f.width || f.height) {
+                        let mdata = [];
+                        if (f.size_str) mdata.push(__('Size') + ': ' + f.size_str);
+                        if (f.width && f.height) mdata.push(__('Dimensions') + ': ' + f.width + 'x' + f.height);
+                        mdata = mdata.join('    ');
+                        meta = `<div class="display-4 ba-filesize">${mdata}</div>`;
                     }
-                    $(`
+                    let file = $(`
                         <div class="col-lg-3 col-md-4 col-6 p-1">
                             <a href="${href}" class="ba-link" target="__blank"${attr}>
                                 <div class="card h-100">
-                                    <div class="icon card-img-top pt-3 ba-file ${_class}"></div>
+                                    <div class="icon card-img-top pt-3 ba-file ${f.class}"></div>
                                     <div class="card-body py-1">
-                                        <div class="card-title display-4 ba-filename">${name}</div>
+                                        <div class="card-title display-4 ba-filename">${f.name}</div>
+                                        ${meta}
                                     </div>
                                 </div>
                             </a>
                         </div>
                     `).appendTo(row);
-                });
-                row.find('a[data-ba-image]').each(function(i, dom) {
-                    dom = $(dom);
-                    me._on_setup_display(dom, dom.attr('data-ba-image'));
+                    if (f.is_image) me._on_setup_display(file, f.url);
                 });
                 dialog.show();
             });
@@ -268,24 +253,46 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         opts.allowed_file_types = make_images_list(opts.allowed_file_types);
         if (!opts.allowed_file_types.length) opts.allowed_file_types = ['image/*'];
     },
-    _value_to_array: function(value, def) {
-        let val = value;
-        if (!Array.isArray(val)) {
-            if (frappe.utils.is_json(val)) val = JSON.parse(val);
-            val = vall || def || [];
-        }
-        return val;
-    },
-    _append_value: function(value) {
+    _prepare_value: function(value) {
         if (this._allow_multiple) {
-            let _value = this._value_to_array(this.value);
-            if (_value.indexOf(value) < 0) {
-                _value.push(value);
-                this.value = value = JSON.stringify(_value);
+            let vals = valToArray(this.value);
+            if (vals.indexOf(value) < 0) {
+                vals.push(value);
+                value = JSON.stringify(vals);
             } else {
                 value = this.value;
             }
         }
         return value;
+    },
+    _add_file: function(value) {
+        var val = deepCloneObject(value);
+        val.name = val.file_name;
+        val.url = val.file_url;
+        val.class = !this._images_only ? get_icon_class(val.url) : 'ba-image';
+        val.is_image = this._images_only || val.class === 'ba-image';
+        if (val.is_image) {
+            $('<img>', {
+                src: val.url,
+                onload: function() {
+                    val.width = this.width;
+                    val.height = this.height;
+                }
+            });
+        }
+        if (this.file_uploader) {
+            let uf = this.file_uploader.uploader.files;
+            for (var i = 0, l = uf.length; i < l; i++) {
+                let f = uf[i];
+                if (f.file_obj && f.doc && f.doc.file_url === val.url) {
+                    val.size = f.file_obj.size;
+                    val.size_str = formatSize(val.size);
+                    val.extension = f.file_obj.name.toLowerCase().split('.').pop();
+                    val.mime = f.file_obj.type.toLowerCase().split(';')[0];
+                    break;
+                }
+            }
+        }
+        this._files.push(val);
     }
 });
