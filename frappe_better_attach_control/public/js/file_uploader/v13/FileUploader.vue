@@ -122,7 +122,7 @@
 import FilePreview from './FilePreview.vue';
 import FileBrowser from './FileBrowser.vue';
 import WebLink from './WebLink.vue';
-import GoogleDrivePicker from './../../../../frappe/js/integrations/google_drive_picker';
+import GoogleDrivePicker from './../../integrations/google_drive_picker';
 import { get_image_type } from './../../utils/mime.js';
 
 export default {
