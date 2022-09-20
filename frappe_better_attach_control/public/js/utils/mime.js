@@ -94,7 +94,7 @@ var LIST = {
     'xwd': 'image/x-xwindowdump'
 };
 
-function to_images_list(v) {
+export function to_images_list(v) {
     let ret = [];
     for (var k in LIST) {
         if (v.indexOf(k) >= 0) {
@@ -108,6 +108,6 @@ function to_images_list(v) {
     return ret;
 }
 
-export {
-    to_images_list
-};
+export function get_image_type(ext) {
+    return LIST[ext];
+}
