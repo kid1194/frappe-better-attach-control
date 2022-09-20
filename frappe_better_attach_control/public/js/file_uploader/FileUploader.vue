@@ -315,7 +315,7 @@ export default {
     				    return file;
     				});
 			}
-			let files = Array.from(file_array);
+			let files = Array.from(file_array)
 			    .filter(this.check_restrictions)
 				.map(file => {
 				    let is_image =  file.type.startsWith('image');
