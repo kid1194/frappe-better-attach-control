@@ -1,38 +1,8 @@
 import { get_image_type } from './utils/mime.js';
 
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
-    constructor({
-        wrapper,
-        method,
-        on_success,
-        doctype,
-        docname,
-        fieldname,
-        files,
-        folder,
-        restrictions,
-        upload_notes,
-        allow_multiple,
-        as_dataurl,
-        disable_file_browser,
-        frm
-    } = {}) {
-        super({
-            wrapper,
-            method,
-            on_success,
-            doctype,
-            docname,
-            fieldname,
-            files,
-            folder,
-            restrictions,
-            upload_notes,
-            allow_multiple,
-            as_dataurl,
-            disable_file_browser,
-            frm
-        });
+    constructor(opts) {
+        super(opts || {});
         
         this.uploader.add_files = function(file_array, ret) {
             if (ret) {
@@ -59,7 +29,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         failed: false,
                         uploading: false,
                         private: !is_image
-                    }
+                    };
                 });
             if (ret) return files;
             this.files = this.files.concat(files);
@@ -80,7 +50,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 frappe.msgprint(__('Invalid URL'));
                 return Promise.reject();
             }
-            file_url = decodeURI(file_url)
+            file_url = decodeURI(file_url);
             return this.upload_file({
                 file_url
             }, true);

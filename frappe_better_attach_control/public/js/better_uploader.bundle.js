@@ -1,42 +1,8 @@
 import { get_image_type } from './utils/mime.js';
 
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
-    constructor({
-        wrapper,
-        method,
-        on_success,
-        doctype,
-        docname,
-        fieldname,
-        files,
-        folder,
-        restrictions = {},
-        upload_notes,
-        allow_multiple,
-        as_dataurl,
-        disable_file_browser,
-        dialog_title,
-        attach_doc_image,
-        frm
-    } = {}) {
-        super({
-            wrapper,
-            method,
-            on_success,
-            doctype,
-            docname,
-            fieldname,
-            files,
-            folder,
-            restrictions = {},
-            upload_notes,
-            allow_multiple,
-            as_dataurl,
-            disable_file_browser,
-            dialog_title,
-            attach_doc_image,
-            frm
-        });
+    constructor(opts) {
+        super(opts || {});
         
         this.uploader.add_files = function(file_array, ret) {
             if (ret) {
@@ -51,7 +17,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         return file;
                     });
             }
-            let files = Array.from(file_array);
+            let files = Array.from(file_array)
                 .filter(this.check_restrictions)
                 .map(file => {
                     let is_image =  file.type.startsWith('image');
@@ -112,7 +78,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 this.close_dialog = true;
                 return Promise.reject();
             }
-            file_url = decodeURI(file_url)
+            file_url = decodeURI(file_url);
             this.close_dialog = true;
             return this.upload_file({
                 file_url
