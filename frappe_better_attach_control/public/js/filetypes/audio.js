@@ -2,7 +2,7 @@
 *  Frappe Better Attach Control © 2022
 *  Author:  Ameen Ahmed
 *  Company: Level Up Marketing & Software Development Services
-*  Licence: Please refer to license.txt
+*  Licence: Please refer to LICENSE file
 */
 
 var EXTS = (
@@ -12,6 +12,6 @@ var EXTS = (
     + 'wav wax weba wma xm'
 ).split(' ');
 
-export default function is_audio(ext) {
+export function is_audio(ext) {
     return EXTS.indexOf(ext) >= 0;
 }

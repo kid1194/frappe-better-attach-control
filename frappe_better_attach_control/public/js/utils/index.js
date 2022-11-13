@@ -2,46 +2,76 @@
 *  Frappe Better Attach Control © 2022
 *  Author:  Ameen Ahmed
 *  Company: Level Up Marketing & Software Development Services
-*  Licence: Please refer to license.txt
+*  Licence: Please refer to LICENSE file
 */
 
-export function deepCloneObject(v) {
-    var ret = {};
-    if (!$.isPlainObject(v)) return ret;
-    for (var k in v) {
-        let y = v[k];
-        if ($.isPlainObject(y)) y = deepCloneObject(y);
-        else if (Array.isArray(y)) y = deepCloneArray(y);
-        ret[k] = y;
-    }
-    return ret;
+
+export function getVersion() {
+    frappe.provide('frappe.boot.versions');
+    var ver = frappe.boot.versions.frappe || '0';
+    return cint(ver.split('.')[0]);
 }
 
-export function deepCloneArray(v) {
-    var ret = [];
-    if (!Array.isArray(v)) return ret;
-    v.forEach(function(d) {
-        let y = d;
-        if (Array.isArray(y)) y = deepCloneArray(y);
-        else if ($.isPlainObject(y)) y = deepCloneObject(y);
-        ret.push(y);
-    });
-    return ret;
+export function isArray(v) { return Array.isArray(v); }
+
+export function isObject(v) { return $.isPlainObject(v); }
+
+export function isClass(v) { return v && typeof v === 'object'; }
+
+export function isJson(v) {
+    try {
+		JSON.parse(v);
+	} catch(e) {
+		return false;
+	}
+	return true;
 }
 
-export function valToArray(v, def, loose) {
-    if (!Array.isArray(v)) {
-        if (frappe.utils.is_json(v)) {
-            try {
-                v = JSON.parse(v);
-            } catch(e) {
-                v = null;
-            }
+export function deepClone(v) {
+    return isArray(v) || isObject(v)
+        ? JSON.parse(JSON.stringify(v))
+        : v;
+}
+
+export function each(data, fn, bind) {
+    bind = bind || null;
+    if (isArray(data)) {
+        for (var i = 0, l = data.length; i < l; i++) {
+            if (fn.apply(bind, [data[i], i]) === false) return;
+        }
+    } else if (isClass(data)) {
+        for (var k in data) {
+            if (fn.apply(bind, [data[k], k]) === false) return;
         }
     }
-    if (!loose && !Array.isArray(def)) def = [];
-    if (!Array.isArray(v)) v = def;
-    return v;
+}
+
+export function parseJson(v) {
+	try {
+		return JSON.parse(v);
+	} catch(e) {
+		return v;
+	}
+}
+
+export function toJson(v) {
+	try {
+		return JSON.stringify(v);
+	} catch(e) {
+	    return '';
+	}
+}
+
+export function toArray(v, def, loose) {
+    if (!isArray(v)) v = parseJson(v);
+    if (isArray(v)) return v;
+    return !loose && !isArray(def) ? [] : def;
+}
+
+export function bindFn(fn, cls) {
+    return function() {
+        return fn && fn.apply(cls, arguments);
+    };
 }
 
 var FILE_SIZES = ['B', 'KB', 'MB', 'TB', 'PB', 'EB', 'ZB', 'YB'];

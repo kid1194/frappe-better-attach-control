@@ -1,9 +1,16 @@
+# Frappe Better Attach Control © 2022
+# Author:  Ameen Ahmed
+# Company: Level Up Marketing & Software Development Services
+# Licence: Please refer to LICENSE file
+
+
 from setuptools import setup, find_packages
+from frappe_better_attach_control import __version__ as version
+
 
 with open('requirements.txt') as f:
     install_requires = f.read().strip().split('\n')
 
-from frappe_better_attach_control import __version__ as version
 
 setup(
     name='frappe_better_attach_control',

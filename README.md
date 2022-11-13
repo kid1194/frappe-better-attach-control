@@ -5,26 +5,21 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 ---
 
 ### Table of Contents
-<ul>
-    <li><a href="#requirements">Requirements</a></li>
-    <li>
-    <a href="#setup">Setup</a>
-        <ul>
-            <li><a href="#install">Install</a></li>
-            <li><a href="#update">Update</a></li>
-            <li><a href="#uninstall">Uninstall</a></li>
-        </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#available-options">Available Options</a></li>
-    <li><a href="#supported-fields">Supported Fields</a></li>
-    <li><a href="#license">License</a></li>
-</ul>
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Install](#install)
+  - [Update](#update)
+  - [Uninstall](#uninstall)
+- [Usage](#usage)
+- [Available Options](#available-options)
+- [Supported Fields](#supported-fields)
+- [Issues](#issues)
+- [License](#license)
 
 ---
 
 ### Requirements
-- Frappe >= v13.0.0
+- Frappe >= v12.0.0
 
 ---
 
@@ -54,7 +49,7 @@ bench get-app https://github.com/kid1194/frappe-better-attach-control
 *(Required only once)*
 
 ```
-bench build --apps frappe_better_attach_control
+bench build --app frappe_better_attach_control
 ```
 
 4. Install plugin on a specific site
@@ -87,7 +82,7 @@ cd ~/frappe-bench
 4. Build plugin
 
 ```
-bench build --apps frappe_better_attach_control
+bench build --app frappe_better_attach_control
 ```
 
 5. Update a specific site
@@ -96,7 +91,7 @@ bench build --apps frappe_better_attach_control
 bench --site [sitename] migrate
 ```
 
-6. Restart bench
+6. (Optional) Restart bench
 
 ```
 bench restart
@@ -121,7 +116,7 @@ bench --site [sitename] uninstall-app frappe_better_attach_control
 bench remove-app frappe_better_attach_control
 ```
 
-4. Restart bench
+4. (Optional) Restart bench
 
 ```
 bench restart
@@ -132,12 +127,13 @@ bench restart
 ### Usage
 1. Go to Customization > Customize Form
 2. Enter the form type/name (Ex: 'User')
-3. Scroll down to the form fields area and edit the *Attach* or *Attach Image* fields you want
+3. Scroll down to the form fields area and create an *Attach* or *Attach Image* field or edit an existing custom field
 4. In the *options* property of the fields, add a JSON object of the customizations you want. Example:
-
 ```
 {"allowed_file_types": ["jpg", "png", "gif"]}
 ```
+
+ℹ️ **Note: You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.**
 
 ---
 
@@ -192,6 +188,13 @@ bench restart
             <p><i>Default: <code>1</code></i></p>
         </td>
     </tr>
+    <tr>
+        <td><code>as_public</code></td>
+        <td>
+            <p>Force uploads to be saved in public folder</p>
+            <p><i>Default: <code>false</code></i></p>
+        </td>
+    </tr>
 </table>
 
 ---
@@ -202,5 +205,10 @@ bench restart
 
 ---
 
+### Issues
+If you find bug in the plugin, please create a [bug report](https://github.com/kid1194/frappe-better-attach-control/issues/new?assignees=&labels=&template=bug_report.md&title=) and let us know about it.
+
+---
+
 ### License
-MIT
+This repository has been released under the [MIT License](https://github.com/kid1194/frappe-better-attach-control/blob/main/LICENSE).

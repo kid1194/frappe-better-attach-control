@@ -1,20 +1,39 @@
-.ba-link, .ba-link::hover {
+.ba-link, .ba-link:hover {
     text-decoration: none;
 }
 .ba-filename {
     color: #000;
-    font-size: 1rem;
-    text-align: center;
+    font-size: .9rem;
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-box-orient: vertical;
+    -o-line-clamp: 1;
+    -moz-box-orient: vertical;
+    -moz-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
 }
-.ba-filesize {
+.ba-file-link {
+    color: #bababa;
+    font-size: .8rem;
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-box-orient: vertical;
+    -o-line-clamp: 1;
+    -moz-box-orient: vertical;
+    -moz-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+.ba-meta {
     color: #000;
     font-size: .7rem;
-    text-align: center;
 }
 .ba-file {
-    margin-top: 1rem;
-    width: auto;
-    height: 60px;
+    width: 30px;
+    height: 30px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
