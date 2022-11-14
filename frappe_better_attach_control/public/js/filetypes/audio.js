@@ -12,6 +12,6 @@ var EXTS = (
     + 'wav wax weba wma xm'
 ).split(' ');
 
-export function is_audio(ext) {
+export default function is_audio(ext) {
     return EXTS.indexOf(ext) >= 0;
 }

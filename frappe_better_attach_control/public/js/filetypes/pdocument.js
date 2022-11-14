@@ -9,6 +9,6 @@ var EXTS = (
     'pdf ps eps'
 ).split(' ');
 
-export function is_pdocument(ext) {
+export default function is_pdocument(ext) {
     return EXTS.indexOf(ext) >= 0;
 }

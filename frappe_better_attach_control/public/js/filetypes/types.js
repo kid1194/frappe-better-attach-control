@@ -1068,6 +1068,6 @@ var EXTS = {
     'zmm'        : 'application/vnd.handheld-entertainment+xml'
 };
 
-export default function(ext) {
+export default function get_type(ext) {
     return EXTS[ext];
 }
