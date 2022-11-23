@@ -9,12 +9,13 @@
 import {
     deepClone,
     isArray,
-    isObject,
+    isPlainObject,
     each,
+    clear,
     parseJson,
     toJson,
     toArray,
-    bindFn,
+    fn,
     formatSize
 } from './../../utils';
 import {
@@ -31,10 +32,11 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     make_input: function() {
         this._parse_options();
         
+        var me = this;
         this.$input = $('<button class="btn btn-default btn-sm btn-attach">')
             .html(__('Attach'))
             .prependTo(this.input_area)
-            .on('click', bindFn(function() { this.on_attach_click(); }, this));
+            .on('click', function() { me.on_attach_click(); });
 		
         this.$value = $(`
             <div class="attached-file flex justify-between align-center">
@@ -48,8 +50,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 </div>
             </div>
         `)
-        .appendTo(this.input_area)
-        .toggle(false);
+            .appendTo(this.input_area)
+            .toggle(false);
+        
         frappe.utils.bind_actions_with_object(this.$value, this);
         this.toggle_reload_button();
         
@@ -72,10 +75,10 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this.parse_validate_and_set_in_model(null);
         this.refresh();
         
-        let callback = bindFn(function() {
+        let callback = fn(function() {
             this.parse_validate_and_set_in_model(null);
             this.refresh();
-            this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
+            cint(this.frm.doc.docstatus) === 1 ? this.frm.save('Update') : this.frm.save();
         }, this);
         
         if (this._allow_multiple) {
@@ -100,7 +103,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         
         let options = {
             allow_multiple: false,
-            on_success: bindFn(function(file) {
+            on_success: fn(function(file) {
                 this.on_upload_complete(file);
                 this.toggle_reload_button();
             }, this),
@@ -111,7 +114,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             options.docname = this.frm.docname;
             options.fieldname = this.df.fieldname;
         }
-        if (isObject(this._options)) {
+        if (isPlainObject(this._options)) {
             Object.assign(options, this._options);
         }
         this.upload_options = this._images_only ? this._make_image_options(options) : options;
@@ -122,7 +125,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     set_input: function(value, dataurl) {
         if (!value) {
             this.value = null;
-            this._files = {};
+            clear(this._files);
             this._files_idx = 1;
             this.$input.toggle(true);
             this.$value.toggle(false);
@@ -150,7 +153,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             let vals = toArray(this.value),
             file_name = filename;
             if (vals.length > 1) file_name = vals.length + ' ' + __('files uploaded');
-            $link.html(file_name);
+            $link.html(file_name).attr('href', '#');
         } else {
             $link.html(filename).attr('href', dataurl || value);
         }
@@ -161,7 +164,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (this.frm) {
             this.parse_validate_and_set_in_model(this._set_value(attachment.file_url));
             this.frm.attachments.update_attachment(attachment);
-            this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
+            cint(this.frm.doc.docstatus) === 1 ? this.frm.save('Update') : this.frm.save();
         }
         this.set_value(attachment.file_url);
     },
@@ -178,7 +181,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (!this.df.options || this.df.options === this._latest_options) return;
         
         let options = parseJson(this.df.options);
-        if (!isObject(options)) return;
+        if (!isPlainObject(options)) return;
         
         this.df.options = this._latest_options = options;
         let opts = {restrictions: {}};
@@ -194,7 +197,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 if (i < 2) opts[k] = v;
                 else {
                     if (i === 3 && v && !isArray(v)) {
-                        v = isObject(v) ? Object.values(v) : [v];
+                        v = isPlainObject(v) ? Object.values(v) : [v];
                     }
                     opts.restrictions[k] = v;
                 }
@@ -203,6 +206,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         );
         this._options = opts;
         this._allow_multiple = opts.allow_multiple || false;
+        
         let max_number_of_files = opts.restrictions.max_number_of_files || 0;
         if (this.frm && this._allow_multiple && max_number_of_files) {
             let meta = frappe.get_meta(this.frm.doctype);
@@ -221,34 +225,35 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         }
         
         this._files_dialog = new frappe.ui.Dialog({
-            title: this.df.label,
+            title: __(this.df.label),
             indicator: 'blue',
         });
         this._files_dialog.set_primary_action(__('Close'), this._files_dialog.hide);
         this._files_dialog.get_primary_btn().removeClass('btn-primary').addClass('btn-danger');
+        
         let wrapper = this._files_dialog.$wrapper.addClass('modal-dialog-scrollable'),
         body = wrapper.find('.modal-body'),
         container = $('<div class="container-fluid p-1"></div>').appendTo(body);
         this._files_row = $('<div class="row"></div>').appendTo(container);
         
         var me = this;
-        this._files_row.on('click', 'div[data-file-idx]', function(e) {
+        this._files_row.on('click', 'div.ba-remove', function(e) {
             e.preventDefault();
             let idx = $(this).attr('data-file-idx');
-            if (idx) {
+            if (idx != null) {
                 me._remove_file(cint(idx));
                 $($(this).closest('div.ba-attachment').get(0)).remove();
             }
         });
         
-        this.$value.find('.attached-file-link')
+        this.$value.find('a.attached-file-link')
         .on('click', function(e) {
             e.preventDefault();
             me._files_dialog.show();
         });
     },
     _setup_popover: function(dom, url) {
-        dom = dom || this.$value.find('.attached-file-link');
+        dom = dom || this.$value.find('a.attached-file-link');
         url = url || this.value;
         $(dom).popover({
             trigger: 'hover',
@@ -314,7 +319,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (file.width && file.height) meta.push(__('Dimensions') + ': ' + file.width + 'x' + file.height);
         if (meta.length) {
             meta = meta.join('  -  ');
-            meta = `<div class="d-block display-4 ba-meta mt-1">${meta}</div>`;
+            meta = `<div class="d-block ba-meta mt-1">${meta}</div>`;
         } else {
             meta = '';
         }
@@ -330,7 +335,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                                     </div>
                                     <div class="col p-0 d-flex flex-column justify-content-center">
                                         <div class="d-block">
-                                            <a href="${file.url}" class="ba-link display-4 ba-filename" target="__blank">
+                                            <a href="${file.url}" class="ba-link ba-filename" target="__blank">
                                                 <span class="fa fa-link ba-file-link"></span>
                                                 ${file.name}
                                             </a>
@@ -339,7 +344,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-auto px-4" data-file-idx="${idx}">
+                            <div class="col-auto px-4 ba-remove" data-file-idx="${idx}">
                                 <span class="fa fa-times fa-fw text-danger"></span>
                             </div>
                         </div>
@@ -368,10 +373,10 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         
         this.frm.attachments.remove_attachment_by_filename(
             file,
-            bindFn(function() {
+            fn(function() {
                 this.parse_validate_and_set_in_model(this.value);
                 this.refresh();
-                this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
+                cint(this.frm.doc.docstatus) === 1 ? this.frm.save('Update') : this.frm.save();
             }, this)
         );
     }

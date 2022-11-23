@@ -5,12 +5,6 @@ import {
 } from './../../filetypes';
 
 
-frappe._ba = {
-    log: function(text) {
-        console.log('[Better Attach]: ' + text);
-    }
-};
-
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
         super(opts || {});
@@ -95,7 +89,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 return Promise.reject();
             }
             file_url = decodeURI(file_url);
-            frappe._ba.log('Uploading via web link.');
             return this.upload_file({file_url: file_url}, null, true);
         };
         up._upload_file = up.upload_file;
@@ -140,7 +133,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb.get_files_in_folder = function(folder) {
             var me = this;
             return frappe.call(
-                'frappe_better_attach_control.api.handler.get_files_in_folder',
+                'frappe_better_attach_control.api.get_files_in_folder',
                 {folder}
 			).then(function(r) {
 				let files = r.message || [];

@@ -5,12 +5,6 @@ import {
 } from './../filetypes';
 
 
-frappe._ba = {
-    log: function(text) {
-        console.log('[Better Attach]: ' + text);
-    }
-};
-
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
         super(opts || {});
@@ -95,7 +89,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             }
             file_url = decodeURI(file_url);
             this.close_dialog = true;
-            frappe._ba.log('Uploading via web link.');
             return this.upload_file({file_url: file_url}, null, true);
         };
         up._upload_file = up.upload_file;
@@ -109,7 +102,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         };
         up.google_drive_callback = function(data) {
             if (data.action == google.picker.Action.PICKED) {
-                frappe._ba.log('Uploading via google drive.');
                 this.upload_file({
                     file_url: data.docs[0].url,
                     file_name: data.docs[0].name
@@ -151,7 +143,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb.get_files_in_folder = function(folder, start) {
             var me = this;
             return frappe.call(
-                'frappe_better_attach_control.api.handler.get_files_in_folder',
+                'frappe_better_attach_control.api.get_files_in_folder',
                 {
 					folder,
 					start,
@@ -184,7 +176,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			if (this.search_text.length < 3) return;
 			var me = this;
 			frappe.call(
-				'frappe_better_attach_control.api.handler.get_files_by_search_text',
+				'frappe_better_attach_control.api.get_files_by_search_text',
 				{text: this.search_text}
 			).then(function(r) {
 				let files = r.message || [];

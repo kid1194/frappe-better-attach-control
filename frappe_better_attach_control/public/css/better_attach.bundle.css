@@ -4,6 +4,8 @@
 .ba-filename {
     color: #000;
     font-size: .9rem;
+    font-weight: 300;
+    line-height: 1.2;
     display: -webkit-box;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -30,6 +32,8 @@
 .ba-meta {
     color: #000;
     font-size: .7rem;
+    font-weight: 300;
+    line-height: 1.2;
 }
 .ba-file {
     width: 30px;
