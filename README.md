@@ -2,6 +2,8 @@
 
 A small plugin for Frappe that adds the support of customizations to the attach control.
 
+⚠️ **v2 is still in BETA stage** ⚠️
+
 ---
 
 ### Table of Contents
