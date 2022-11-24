@@ -66,19 +66,6 @@ def to_json_if_valid(data, default=None):
         return default
 
 
-def parse_json_if_valid(data, default=None):
-    if not data:
-        return data
-    
-    if default is None:
-        default = data
-    
-    try:
-        return json.loads(data)
-    except Exception:
-        return default
-
-
 @frappe.whitelist()
 def get_files_in_folder(folder, start=0, page_length=20):
     result = _get_files_in_folder(folder, start, page_length)
@@ -198,29 +185,3 @@ def _get_full_path(file):
         error(_("File name cannot have {0}").format(os.path.sep))
 
     return file_path
-
-
-def delete_attach_files(doctype, name, files):
-    if not files:
-        return 0
-    
-    files = parse_json_if_valid(files)
-    
-    if not files or not isinstance(files, list):
-        return 0
-    
-    if (file_names := frappe.get_all(
-        _FILE_DOCTYPE_,
-        fields=["name"],
-        filters=[
-            ["file_url", "in", files],
-            ["attached_to_doctype", "=", doctype],
-            ["ifnull(`attached_to_name`,\"\")", "in", [name, ""]]
-        ],
-        pluck="name"
-    )):
-        for file in file_names:
-            (frappe.get_doc(_FILE_DOCTYPE_, file)
-                .delete(ignore_permissions=True))
-    
-    return 1
