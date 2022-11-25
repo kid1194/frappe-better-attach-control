@@ -6,6 +6,7 @@
     font-size: .9rem;
     font-weight: 300;
     line-height: 1.2;
+    display: -moz-box;
     display: -webkit-box;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -19,15 +20,6 @@
 .ba-file-link {
     color: #bababa;
     font-size: .8rem;
-    display: -webkit-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -o-box-orient: vertical;
-    -o-line-clamp: 1;
-    -moz-box-orient: vertical;
-    -moz-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
 }
 .ba-meta {
     color: #000;
@@ -38,6 +30,7 @@
 .ba-file {
     width: 30px;
     height: 30px;
+    margin-left: 5px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
