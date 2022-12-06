@@ -9,3 +9,5 @@
 import './uploader';
 import './controls/attach.js';
 import './controls/attach_image.js';
+import './filetypes';
+import './utils';

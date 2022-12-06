@@ -8,7 +8,7 @@
 import is_audio from './audio.js';
 import is_compressed from './compressed.js';
 import is_image from './image.js';
-import is_pdocument from './pdocument.js';
+import is_pdf from './pdf.js';
 import is_presentation from './presentation.js';
 import is_spreadsheet from './spreadsheet.js';
 import is_text from './text.js';
@@ -25,18 +25,29 @@ export function get_file_ext(path) {
     return get_filename(path).split('.').pop();
 }
 
-export function get_icon_class(path) {
-    var ext = get_file_ext(path);
-    if (is_audio(ext)) return 'audio';
-    if (is_compressed(ext)) return 'compressed';
-    if (is_image(ext)) return 'image';
-    if (is_pdocument(ext)) return 'pdf';
-    if (is_presentation(ext)) return 'presentation';
-    if (is_spreadsheet(ext)) return 'spreadsheet';
-    if (is_video(ext)) return 'video';
-    if (is_word(ext)) return 'word';
-    if (is_text(ext)) return 'text';
-    return 'other';
+var _CLASSES = [
+    'audio', 'compressed', 'image',
+    'pdf', 'presentation', 'spreadsheet',
+    'video', 'word', 'text', 'other'
+];
+
+function get_icon_class(ext) {
+    if (is_audio(ext)) return _CLASSES[0];
+    if (is_compressed(ext)) return _CLASSES[1];
+    if (is_image(ext)) return _CLASSES[2];
+    if (is_pdf(ext)) return _CLASSES[3];
+    if (is_presentation(ext)) return _CLASSES[4];
+    if (is_spreadsheet(ext)) return _CLASSES[5];
+    if (is_video(ext)) return _CLASSES[6];
+    if (is_word(ext)) return _CLASSES[7];
+    if (is_text(ext)) return _CLASSES[8];
+    return _CLASSES[9];
+}
+
+export function set_file_info(obj) {
+    obj.class = get_icon_class(obj.extension);
+    obj.can_preview = [0, 2, 6].indexOf(_CLASSES.indexOf(obj.class));
+    return obj;
 }
 
 export function to_images_list(v) {

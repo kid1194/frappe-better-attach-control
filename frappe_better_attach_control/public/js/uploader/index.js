@@ -56,7 +56,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         request_succeeded: false,
                         error_message: null,
                         uploading: false,
-                        private: me.restrictions.as_public ? false : true
+                        private: !me.restrictions.as_public,
                     };
                 });
             
@@ -116,84 +116,84 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-			let { max_file_size, allowed_file_types = [] } = this._restrictions;
-			
-			let is_correct_type = true;
-			let valid_file_size = true;
-			
-			if (allowed_file_types && allowed_file_types.length) {
-				is_correct_type = allowed_file_types.some(function(type) {
-					if (type.includes('/')) {
-						if (!file.type) return false;
-						return file.type.match(type);
-					}
-					if (type[0] === '.') {
-						return (file.name || file.file_name).endsWith(type);
-					}
-					return false;
-				});
-			}
-			
-			if (max_file_size && file.size != null && file.size) {
-				valid_file_size = file.size < max_file_size;
-			}
-			
-			return is_correct_type && valid_file_size;
-		};
+            let { max_file_size, allowed_file_types = [] } = this._restrictions;
+            
+            let is_correct_type = true;
+            let valid_file_size = true;
+            
+            if (allowed_file_types && allowed_file_types.length) {
+                is_correct_type = allowed_file_types.some(function(type) {
+                    if (type.includes('/')) {
+                        if (!file.type) return false;
+                        return file.type.match(type);
+                    }
+                    if (type[0] === '.') {
+                        return (file.name || file.file_name).endsWith(type);
+                    }
+                    return false;
+                });
+            }
+            
+            if (max_file_size && file.size != null && file.size) {
+                valid_file_size = file.size < max_file_size;
+            }
+            
+            return is_correct_type && valid_file_size;
+        };
         fb.get_files_in_folder = function(folder, start) {
             var me = this;
             return frappe.call(
                 'frappe_better_attach_control.api.get_files_in_folder',
                 {
-					folder,
-					start,
-					page_length: this.page_length
-				}
-			).then(function(r) {
-				let { files = [], has_more = false } = r.message || {};
-				files = files.filter(me.check_restrictions);
-				files.sort(function(a, b) {
-					if (a.is_folder && b.is_folder) {
-						return a.modified < b.modified ? -1 : 1;
-					}
-					if (a.is_folder) {
-						return -1;
-					}
-					if (b.is_folder) {
-						return 1;
-					}
-					return 0;
-				});
-				files = files.map(function(file) { return me.make_file_node(file); });
-				return { files, has_more };
-			});
+                    folder,
+                    start,
+                    page_length: this.page_length
+                }
+            ).then(function(r) {
+                let { files = [], has_more = false } = r.message || {};
+                files = files.filter(me.check_restrictions);
+                files.sort(function(a, b) {
+                    if (a.is_folder && b.is_folder) {
+                        return a.modified < b.modified ? -1 : 1;
+                    }
+                    if (a.is_folder) {
+                        return -1;
+                    }
+                    if (b.is_folder) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                files = files.map(function(file) { return me.make_file_node(file); });
+                return { files, has_more };
+            });
         };
         fb.search_by_name = frappe.utils.debounce(function() {
-			if (this.search_text === '') {
-				this.node = this.folder_node;
-				return;
-			}
-			if (this.search_text.length < 3) return;
-			var me = this;
-			frappe.call(
-				'frappe_better_attach_control.api.get_files_by_search_text',
-				{text: this.search_text}
-			).then(function(r) {
-				let files = r.message || [];
-				files = files.filter(me.check_restrictions)
-				    .map(function(file) { return me.make_file_node(file); });
-				if (!me.folder_node) {
-					me.folder_node = me.node;
-				}
-				me.node = {
-					label: __('Search Results'),
-					value: '',
-					children: files,
-					by_search: true,
-					open: true,
-					filtered: true
-				};
-			});
-		}, 300);
+            if (this.search_text === '') {
+                this.node = this.folder_node;
+                return;
+            }
+            if (this.search_text.length < 3) return;
+            var me = this;
+            frappe.call(
+                'frappe_better_attach_control.api.get_files_by_search_text',
+                {text: this.search_text}
+            ).then(function(r) {
+                let files = r.message || [];
+                files = files.filter(me.check_restrictions)
+                    .map(function(file) { return me.make_file_node(file); });
+                if (!me.folder_node) {
+                    me.folder_node = me.node;
+                }
+                me.node = {
+                    label: __('Search Results'),
+                    value: '',
+                    children: files,
+                    by_search: true,
+                    open: true,
+                    filtered: true
+                };
+            });
+        }, 300);
     }
 };

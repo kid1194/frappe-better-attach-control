@@ -13,7 +13,8 @@ A small plugin for Frappe that adds the support of customizations to the attach 
   - [Update](#update)
   - [Uninstall](#uninstall)
 - [Usage](#usage)
-- [Available Options](#available-options)
+- [Available Field Options](#available-field-options)
+- [Available JavaScript Methods](#available-javascript-methods)
 - [Supported Fields](#supported-fields)
 - [Issues](#issues)
 - [License](#license)
@@ -129,8 +130,8 @@ bench restart
 ### Usage
 1. Go to Customization > Customize Form
 2. Enter the form type/name (Ex: 'User')
-3. Scroll down to the form fields area and create an *Attach* or *Attach Image* field or edit an existing custom field
-4. In the *options* property of the fields, add a JSON object of the customizations you want. Example:
+3. Scroll down to the form fields area and create an **Attach** or **Attach Image** field or edit an existing custom field
+4. In the **options** property of the field, add a JSON object of the customizations you want. Example:
 ```
 {"allowed_file_types": ["jpg", "png", "gif"]}
 ```
@@ -139,7 +140,7 @@ bench restart
 
 ---
 
-### Available Options
+### Available Field Options
 | Option | Description |
 | :--- | :--- |
 | `upload_notes` | Upload text to be displayed.<br/><br/>- Example: `"Only allowed to upload images and video, with maximum size of 2MB"`<br/>- Default: `""` |
@@ -147,8 +148,21 @@ bench restart
 | `max_file_size` | Maximum file size (in bytes) that is allowed to be uploaded.<br/><br/>- Example: `2048` for `2KB`<br/>- Default: `Value of maximum file size in Frappe's settings` |
 | `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload.<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc"]`<br/>- Default: `null` or `["image/*"]` |
 | `max_number_of_files` | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br/><br/>⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br/>- Example: `4`<br/>- Default: `Value of maximum attachments set for the doctype` |
-| `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `1` |
+| `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
 | `as_public` | Force uploads to be saved in public folder.<br/><br/>- Default: `false` |
+| `allow_reload` | Allow reloading attachments (Frappe >= v13.0.0).<br>ℹ️ Affect the visibility of the reload button.ℹ️<br/><br/>- Default: `true` |
+| `allow_remove` | Allow removing and clearing attachments.<br>ℹ️ Affect the visibility of the remove and clear buttons.ℹ️<br/><br/>- Default: `true` |
+
+---
+
+### Available JavaScript Methods
+| Method | Description |
+| :--- | :--- |
+| `enable_reload()` | Allow reloading attachments and show the reload button (Frappe >= v13.0.0). |
+| `disable_reload()` | Deny reloading attachments and hide reload button (Frappe >= v13.0.0). |
+| `enable_remove()` | Allow removing and clearing attachments and show the clear and remove buttons. |
+| `disable_remove()` | Deny removing and clearing attachments and hide the clear and remove buttons. |
+| `show_files()` | Show the list of uploaded files in a dialog (Only when multiple files is allowed). |
 
 ---
 
