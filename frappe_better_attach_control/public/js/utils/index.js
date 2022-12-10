@@ -227,7 +227,7 @@ export function request(method, args, success, always) {
             try {
                 fnCall(success, ret);
             } catch(e) { error(e); }
-        });
+        };
     }
     if (isFunction(always)) data.always = always;
     try {
