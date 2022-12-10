@@ -17,6 +17,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 - [Available JavaScript Methods](#available-javascript-methods)
 - [Supported Fields](#supported-fields)
 - [Issues](#issues)
+- [Contributors](#contributors)
 - [License](#license)
 
 ---
@@ -174,6 +175,12 @@ bench restart
 
 ### Issues
 If you find bug in the plugin, please create a [bug report](https://github.com/kid1194/frappe-better-attach-control/issues/new?assignees=kid1194&labels=bug&template=bug_report.md&title=%5BBUG%5D) and let us know about it.
+
+---
+
+### Contributors
+**The list of people who deserves more than a simple thank you.**
+- [CA. B.C.Chechani](https://github.com/chechani) (Testing & Debugging)
 
 ---
 

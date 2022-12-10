@@ -74,7 +74,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             }, this);
             this.frm.sidebar.reload_docinfo();
             this.parse_validate_and_set_in_model(null).then(fn(function() {
-                this._reset_input();
+                this._reset_input(1);
                 this.refresh();
                 this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
             }, this));
@@ -106,7 +106,10 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         return super.set_value(this._set_value(value), force_set_value);
     }
     set_input(value, dataurl) {
-        if (isEmpty(value)) {
+        if (
+            isEmpty(value) || value === this.value
+            || value === this._value || this._value.indexOf(value) >= 0
+        ) {
             value == null && this._reset_value();
             return;
         }
@@ -114,7 +117,11 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         let val = toArray(value, null);
         if (isArray(val)) {
             if (!this._allow_multiple) this.set_input(val[0] || null);
-            else each(val, function(v) { this.set_input(v); }, this);
+            else {
+                let last = val.pop();
+                each(val, function(v) { this._set_value(v); }, this);
+                this.set_input(last);
+            }
             return;
         }
         
@@ -147,7 +154,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     }
     refresh() {
         super.refresh();
-        this._parse_options();
+        if (this.df.options && this.df.options !== this._latest_options) {
+            this._parse_options();
+        }
     }
     // Custom Methods
     enable_reload() {
@@ -170,12 +179,12 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._dialog && this._dialog.show();
     }
     _set_value(value) {
-        if (!this._allow_multiple && this._value.length) {
+        let ret = !isEmpty(value) ? value : null,
+        idx = ret ? this._value.indexOf(ret) : 0;
+        if (!ret || (idx < 0 && !this._allow_multiple && this._value.length)) {
             this._remove_file_by_url(this._value.pop());
             this._reset_value();
         }
-        let ret = !isEmpty(value) ? value : null,
-        idx = ret ? this._value.indexOf(ret) : 0;
         if (idx < 0) {
             this._value.push(ret);
             if (this._allow_multiple) {
@@ -212,8 +221,6 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             if (!this._allow_remove) this.enable_remove();
             return;
         }
-        
-        this.df.options = this._latest_options = opts;
         
         if (!this._options) this._options = {restrictions: {}};
         
@@ -560,14 +567,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         }, this);
         
         this._dialog_back.click(fn(function(e) {
-            e.preventDefault();
+            e && e.preventDefault();
             if (!this._is_preview_dialog) this._dialog_fn._reset_preview();
         }, this));
         
         var me = this;
         
         this._files_row.on('click', 'button.ba-preview', function(e) {
-            e.preventDefault();
+            e && e.preventDefault();
             if (!$(this).data('disabled') && !me._is_preview_dialog) {
                 let parent = $($(this).closest('div.ba-attachment').get(0)),
                 idx = parent.data('idx');
@@ -581,7 +588,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         });
         
         this._files_row.on('click', 'button.ba-remove', function(e) {
-            e.preventDefault();
+            e && e.preventDefault();
             if (!$(this).data('disabled') && !me._is_preview_dialog) {
                 let parent = $($(this).closest('div.ba-attachment').get(0)),
                 idx = parent.data('idx');
@@ -595,7 +602,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         
         this.$value.find('a.attached-file-link')
         .on('click', function(e) {
-            e.preventDefault();
+            e && e.preventDefault();
             if (me._is_preview_dialog) {
                 me._dialog_fn._setup_preview(this._files[0]);
             } else me._dialog.show();
@@ -608,12 +615,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._files_row.addClass('hide');
         this._preview_row.removeClass('hide');
     }
-    _reset_input() {
+    _reset_input(ref) {
         this.dataurl = null;
         this.fileobj = null;
-        this.set_input(null);
-        this.parse_validate_and_set_in_model(null);
-        this.refresh();
+        if (!ref) {
+            this.set_input(null);
+            this.parse_validate_and_set_in_model(null);
+            this.refresh();
+        }
     }
     _reset_value() {
         this.value = null;
