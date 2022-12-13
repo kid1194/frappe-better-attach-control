@@ -5,7 +5,6 @@
 
 
 import os
-import mimetypes
 
 import frappe
 from frappe import _
@@ -88,10 +87,8 @@ def _get_files_by_search_text(text):
 def _prepare_files(files):
     for i in range(len(files)):
         file = files[i]
-        file["type"] = ""
         file["size"] = 0
         if not cint(file["is_folder"]):
-            file["type"] = mimetypes.guess_type(f.file_url)[0] or ""
             file["size"] = flt(file["file_size"])
             if not file["size"]:
                 try:

@@ -150,6 +150,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             ).then(fn(function(r) {
                 let { files = [], has_more = false } = r.message || {};
                 if (!isEmpty(files)) {
+                    files = files.map(function(f) {
+                        if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
+                        if (f.type == null) f.type = get_file_type(get_file_ext(f.file_url)) || '';
+                        if (f.size == null) f.size = 0;
+                        return f;
+                    });
                     files = files.filter(this.check_restrictions);
                     files.sort(function(a, b) {
                         if (a.is_folder && b.is_folder) {
@@ -178,6 +184,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             ).then(fn(function(r) {
                 let files = r.message || [];
                 if (!isEmpty(files)) {
+                    files = files.map(function(f) {
+                        if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
+                        if (f.type == null) f.type = get_file_type(get_file_ext(f.file_url)) || '';
+                        if (f.size == null) f.size = 0;
+                        return f;
+                    });
                     files = files.filter(this.check_restrictions)
                         .map(fn(function(file) {
                             return this.make_file_node(file);
