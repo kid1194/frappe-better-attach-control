@@ -46,13 +46,6 @@ function isFunction(v) {
     return v != null && $.isFunction(v);
 }
 
-// Version
-export function getVersion() {
-    frappe.provide('frappe.boot.versions');
-    var ver = frappe.boot.versions.frappe || '0';
-    return cint(ver.split('.')[0]);
-}
-
 // Checks
 export function isArray(v) {
     return v != null && $.isArray(v);
@@ -231,7 +224,7 @@ export function request(method, args, success, always) {
     }
     if (isFunction(always)) data.always = always;
     try {
-        frappe.call(data);
+        return frappe.call(data);
     } catch(e) {
         error(e);
     }
