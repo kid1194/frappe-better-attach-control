@@ -89,7 +89,7 @@ def _prepare_files(files):
         file = files[i]
         file["size"] = 0
         if not cint(file["is_folder"]):
-            file["size"] = flt(file["file_size"])
+            file["size"] = frappe.utils.data.flt(file["file_size"])
             if not file["size"]:
                 try:
                     file["size"] = os.path.getsize(_get_full_path(file))

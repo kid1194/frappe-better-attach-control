@@ -18,9 +18,11 @@ app_email = "kid1194@gmail.com"
 app_license = "MIT"
 
 
+is_frappe_above_v14 = int(frappe_version.split('.')[0]) >= 14
 is_frappe_above_v13 = int(frappe_version.split('.')[0]) > 13
 is_frappe_above_v12 = int(frappe_version.split('.')[0]) > 12
 
+print("is_frappe_above_v14 : {0}".format( is_frappe_above_v14))
 
 app_include_css = [
     'better_attach.bundle.css'
@@ -28,11 +30,12 @@ app_include_css = [
     '/assets/frappe_better_attach_control/css/better_attach.css'
 ]
 
-
 app_include_js = [
+    'better_attach_v14.bundle.js'
+] if is_frappe_above_v14  else ([
     'better_attach.bundle.js'
 ] if is_frappe_above_v13 else ([
     '/assets/frappe_better_attach_control/js/better_attach.js'
 ] if is_frappe_above_v12 else [
     '/assets/frappe_better_attach_control/js/better_attach_v12.js'
-])
+]))

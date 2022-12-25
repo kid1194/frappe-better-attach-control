@@ -306,8 +306,10 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         });
     },
     _make_image_options: function() {
-        var opts = deepClone(this.upload_options),
-        rest = opts.restrictions;
+        let opts={} ;
+        Object.assign(opts,this.upload_options);
+        //let opts = deepClone(this.upload_options),
+        let rest = opts.restrictions;
         if (isEmpty(rest.allowed_file_types)) {
             rest.allowed_file_types = ['image/*'];
         } else {

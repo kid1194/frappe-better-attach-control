@@ -124,10 +124,21 @@ export function toBool(v) {
 }
 export function toArray(v, def) {
     if (def === undefined) def = [];
-    if (isArray(v)) return v;
-    if (isEmpty(v)) return def;
-    if (isObject(v)) return Object.values(v);
-    v = isJson(v) ? parseJson(v) : [v];
+
+    if (isArray(v)) 
+        return v;
+    if (isEmpty(v)) 
+        return def;
+    if (isObject(v)) 
+        return Object.values(v);
+
+    if (isJson(v)) 
+        v = parseJson(v);
+    else if(def===null)
+        return def;
+    else
+        v = [v];
+
     return isArray(v) ? v : def;
 }
 
