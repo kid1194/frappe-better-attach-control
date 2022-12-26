@@ -1,11 +1,4 @@
 {
-  "frappe_better_attach_control/js/better_attach_v14.js": [
-    "public/js/controls/v13/attach.js",
-    "public/js/controls/v13/attach_image.js",
-    "public/js/uploader/v14/index.js",
-    "public/js/filetypes/index.js",
-    "public/js/utils/index.js"
-  ],
   "frappe_better_attach_control/js/better_attach.js": [
     "public/js/controls/v13/attach.js",
     "public/js/controls/v13/attach_image.js",
