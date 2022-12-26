@@ -123,23 +123,15 @@ export function toBool(v) {
     return [true, 'true', 1, '1'].indexOf(v) >= 0;
 }
 export function toArray(v, def) {
+    if (isArray(v)) return v;
     if (def === undefined) def = [];
-
-    if (isArray(v)) 
-        return v;
-    if (isEmpty(v)) 
-        return def;
-    if (isObject(v)) 
-        return Object.values(v);
-
-    if (isJson(v)) 
+    if (isEmpty(v)) return def;
+    if (isObject(v)) return Object.values(v);
+    if (isJson(v)) {
         v = parseJson(v);
-    else if(def===null)
-        return def;
-    else
-        v = [v];
-
-    return isArray(v) ? v : def;
+        return isArray(v) ? v : def;
+    }
+    return [v];
 }
 
 // Function
