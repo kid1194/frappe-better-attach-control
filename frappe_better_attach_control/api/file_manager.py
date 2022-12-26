@@ -8,7 +8,7 @@ import os
 
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, get_url, get_files_path
+from frappe.utils import flt, cint, cstr, get_url, get_files_path
 from frappe.utils.file_manager import is_safe_path
 from frappe.core.doctype.file.file import URL_PREFIXES
 
@@ -89,7 +89,7 @@ def _prepare_files(files):
         file = files[i]
         file["size"] = 0
         if not cint(file["is_folder"]):
-            file["size"] = frappe.utils.data.flt(file["file_size"])
+            file["size"] = flt(file["file_size"])
             if not file["size"]:
                 try:
                     file["size"] = os.path.getsize(_get_full_path(file))
