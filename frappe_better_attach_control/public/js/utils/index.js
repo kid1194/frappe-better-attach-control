@@ -123,22 +123,18 @@ export function toBool(v) {
     return [true, 'true', 1, '1'].indexOf(v) >= 0;
 }
 export function toArray(v, def) {
-    if (def === undefined) def = [];
     if (isArray(v)) return v;
+    if (def === undefined) def = [];
     if (isEmpty(v)) return def;
     if (isObject(v)) return Object.values(v);
-    v = isJson(v) ? parseJson(v) : [v];
-    return isArray(v) ? v : def;
+    if (isJson(v)) {
+        v = parseJson(v);
+        return isArray(v) ? v : def;
+    }
+    return [v];
 }
 
 // Function
-export function fn(fn, cls) {
-    return function() {
-        var args = arguments;
-        if (this != null) Array.prototype.push.call(args, this);
-        return isFunction(fn) && fn.apply(cls, args);
-    };
-}
 function fnCall(f, a, b) {
     if (isFunction(f)) return f.apply(b, toArray(a));
 }
@@ -184,9 +180,10 @@ export function error(text, args, _throw) {
 }
 
 // Call
-export function request(method, args, success, always) {
+export function request(method, args, success, failed, always) {
     if (args && isFunction(args)) {
-        if (isFunction(success)) always = success;
+        if (isFunction(failed)) always = failed;
+        if (isFunction(success)) failed = success;
         success = args;
         args = null;
     }
@@ -211,6 +208,7 @@ export function request(method, args, success, always) {
         return;
     }
     data.error = function(e) {
+        fnCall(failed);
         elog('Call error.', e);
         error('Unable to make the call to {0}', [data.method]);
     };

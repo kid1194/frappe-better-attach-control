@@ -7,7 +7,7 @@
 
 
 frappe.ui.form.ControlAttachImage = frappe.ui.form.ControlAttach.extend({
-    _parse_options: function() {
+    _setup_control: function() {
         this._images_only = true;
         this._super();
     }

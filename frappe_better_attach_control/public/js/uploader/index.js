@@ -10,7 +10,6 @@ import {
     isObject,
     isPlainObject,
     isEmpty,
-    fn,
     error
 } from './../utils';
 import {
@@ -25,16 +24,21 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         super(opts || {});
         if (!this.uploader) return;
         this._override_uploader(opts);
-        this._override_file_browser(
-            !isEmpty(opts.restrictions)
-            ? opts.restrictions
-            : {
-                max_file_size: null,
-                max_number_of_files: null,
-                allowed_file_types: [],
-                crop_image_aspect_ratio: null
+        var me = this;
+        this.uploader.$watch('show_file_browser', function(show_file_browser) {
+            if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
+                me._override_file_browser(
+                    !isEmpty(opts.restrictions)
+                    ? opts.restrictions
+                    : {
+                        max_file_size: null,
+                        max_number_of_files: null,
+                        allowed_file_types: [],
+                        crop_image_aspect_ratio: null
+                    }
+                );
             }
-        );
+        });
     }
     _override_uploader(opts) {
         var up = this.uploader;
@@ -55,7 +59,8 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             });
             files = files.filter(this.check_restrictions);
             if (isEmpty(files)) return !is_single ? [] : null;
-            files = files.map(fn(function(file) {
+            var me = this;
+            files = files.map(function(file) {
                 let is_image =  file.type.startsWith('image'),
                 size_kb = file.size ? file.size / 1024 : 0;
                 return {
@@ -72,9 +77,9 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     request_succeeded: false,
                     error_message: null,
                     uploading: false,
-                    private: !this.restrictions.as_public,
+                    private: !me.restrictions.as_public,
                 };
-            }, this));
+            });
             return !is_single ? files : files[0];
         };
         up.add_files = function(file_array) {
@@ -85,9 +90,10 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 total = uploaded + files.length;
                 if (total > max_number_of_files) {
                     let slice_index = max_number_of_files - uploaded - 1;
-                    files.slice(slice_index).forEach(fn(function(file) {
-                        this.show_max_files_number_warning(file, this.doctype);
-                    }, this));
+                    var me = this;
+                    files.slice(slice_index).forEach(function(file) {
+                        me.show_max_files_number_warning(file, me.doctype);
+                    });
                     files = files.slice(0, max_number_of_files);
                 }
             }
@@ -151,6 +157,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             return is_correct_type && valid_file_size;
         };
         fb.get_files_in_folder = function(folder, start) {
+            var me = this;
             return frappe.call(
                 'frappe_better_attach_control.api.get_files_in_folder',
                 {
@@ -158,7 +165,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     start,
                     page_length: this.page_length
                 }
-            ).then(fn(function(r) {
+            ).then(function(r) {
                 let { files = [], has_more = false } = r.message || {};
                 if (!isEmpty(files)) {
                     files = files.map(function(f) {
@@ -167,7 +174,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         if (f.size == null) f.size = 0;
                         return f;
                     });
-                    files = files.filter(this.check_restrictions);
+                    files = files.filter(me.check_restrictions);
                     files.sort(function(a, b) {
                         if (a.is_folder && b.is_folder) {
                             return a.modified < b.modified ? -1 : 1;
@@ -176,12 +183,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         if (b.is_folder) return 1;
                         return 0;
                     });
-                    files = files.map(fn(function(file) {
-                        return this.make_file_node(file);
-                    }, this));
+                    files = files.map(function(file) {
+                        return me.make_file_node(file);
+                    });
                 }
                 return { files, has_more };
-            }, this));
+            });
         };
         fb.search_by_name = frappe.utils.debounce(function() {
             if (this.search_text === '') {
@@ -189,10 +196,11 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 return;
             }
             if (this.search_text.length < 3) return;
+            var me = this;
             frappe.call(
                 'frappe_better_attach_control.api.get_files_by_search_text',
                 {text: this.search_text}
-            ).then(fn(function(r) {
+            ).then(function(r) {
                 let files = r.message || [];
                 if (!isEmpty(files)) {
                     files = files.map(function(f) {
@@ -201,15 +209,15 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         if (f.size == null) f.size = 0;
                         return f;
                     });
-                    files = files.filter(this.check_restrictions);
+                    files = files.filter(me.check_restrictions);
                     if (!isEmpty(files)) {
-                        files = files.map(fn(function(file) {
-                            return this.make_file_node(file);
-                        }, this));
+                        files = files.map(function(file) {
+                            return me.make_file_node(file);
+                        });
                     }
                 }
-                if (!this.folder_node) this.folder_node = this.node;
-                this.node = {
+                if (!me.folder_node) me.folder_node = me.node;
+                me.node = {
                     label: __('Search Results'),
                     value: '',
                     children: files,
@@ -217,7 +225,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     open: true,
                     filtered: true
                 };
-            }, this));
+            });
         }, 300);
     }
 };

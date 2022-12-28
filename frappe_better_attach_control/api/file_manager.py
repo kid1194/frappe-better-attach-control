@@ -8,7 +8,7 @@ import os
 
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, get_url, get_files_path
+from frappe.utils import flt, cint, cstr, get_url, get_files_path
 from frappe.utils.file_manager import is_safe_path
 from frappe.core.doctype.file.file import URL_PREFIXES
 

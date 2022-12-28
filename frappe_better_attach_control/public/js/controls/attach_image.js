@@ -7,8 +7,8 @@
 
 
 frappe.ui.form.ControlAttachImage = class ControlAttachImage extends frappe.ui.form.ControlAttach {
-    _parse_options() {
+    _setup_control() {
         this._images_only = true;
-        super._parse_options();
+        super._setup_control();
     }
 };
