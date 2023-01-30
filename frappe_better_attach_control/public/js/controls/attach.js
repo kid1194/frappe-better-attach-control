@@ -283,12 +283,12 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 if (!this._allow_reload) this.enable_reload();
                 else this.disable_reload();
             }
-            if (ifNull(opts.allow_remove, true) !== this._allow_remove) {
+            if (ifNull(opt.allow_remove, true) !== this._allow_remove) {
                 if (!this._allow_remove) this.enable_remove();
                 else this.disable_remove();
             }
         }
-        let allow_multiple = opts.options && !!opts.options.allow_multiple;
+        let allow_multiple = opt.options && !!opt.options.allow_multiple;
         if (allow_multiple !== this._allow_multiple) {
             this._allow_multiple = allow_multiple;
             this._set_max_attachments();
