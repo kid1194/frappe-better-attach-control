@@ -273,7 +273,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         );
         return tmp;
     }
-    _reload_control(opt) {
+    _reload_control(opts) {
         if (this.upload_options) {
             this.upload_options = null;
             this.image_upload_options = null;

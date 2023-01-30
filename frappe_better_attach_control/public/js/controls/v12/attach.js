@@ -242,7 +242,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         );
         return tmp;
     },
-    _reload_control: function(opt) {
+    _reload_control: function(opts) {
         if (this.upload_options) this.upload_options = null;
         if (this._display_ready) {
             if (ifNull(opts.allow_remove, true) !== this._allow_remove) {
