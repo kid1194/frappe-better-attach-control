@@ -237,28 +237,30 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         var tmp = {options: {restrictions: {}}};
         tmp.allow_reload = toBool(ifNull(opts.allow_reload, true));
         tmp.allow_remove = toBool(ifNull(opts.allow_remove, true));
+        function parseVal(v, t) {
+            if (isEmpty(v)) v = null;
+            if (t === 's' && v) {
+                v = cstr(v);
+                v = v.length ? v : null;
+            }
+            else if (t === 'b') v = toBool(ifNull(v, false));
+            else if (t === 'i' && v) {
+                v = cint(v);
+                if (isNaN(v) || v < 1) v = null;
+            }
+            else if (t === 'a') v = toArray(v);
+            return v;
+        }
+        each([['upload_notes', 's'], ['allow_multiple', 'b']], function(k) {
+            tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
+        });
         each(
             [
-                'upload_notes', 'allow_multiple',
-                'max_file_size', 'allowed_file_types',
-                'max_number_of_files',
-                'as_public',
+                ['max_file_size', 'i'], ['allowed_file_types', 'a'],
+                ['max_number_of_files', 'i'], ['as_public', 'b'],
             ],
-            function(k, i) {
-                let v = opts[k];
-                if (isEmpty(v)) v = null;
-                if (v && i === 0) {
-                    v = cstr(v);
-                    v = v.length ? v : null;
-                }
-                else if (i === 1 || i === 6) v = toBool(ifNull(v, false));
-                else if (v && [2, 4, 5].indexOf(i) >= 0) {
-                    v = cint(v);
-                    if (isNaN(v) || v < 1) v = null;
-                }
-                else if (i === 3) v = toArray(v);
-                if (i < 2) tmp.options[k] = v;
-                else tmp.options.restrictions[k] = v;
+            function(k) {
+                tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
             }
         );
         return tmp;

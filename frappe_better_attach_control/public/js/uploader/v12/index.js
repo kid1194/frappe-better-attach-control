@@ -28,7 +28,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         this.uploader.$watch('show_file_browser', function(show_file_browser) {
             if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
                 me._override_file_browser(
-                    !isEmpty(opts.restrictions)
+                    isPlainObject(opts) && !isEmpty(opts.restrictions)
                     ? opts.restrictions
                     : {
                         max_file_size: null,
@@ -41,7 +41,10 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     }
     _override_uploader(opts) {
         var up = this.uploader;
-        up.restrictions.as_public = !!opts.restrictions.as_public;
+        if (opts) {
+            up.restrictions = opts.restrictions;
+            up.restrictions.as_public = !!opts.restrictions.as_public;
+        }
         up.dropfiles = function(e) {
 			this.is_dragging = false;
 			if (isObject(e) && isObject(e.dataTransfer))
