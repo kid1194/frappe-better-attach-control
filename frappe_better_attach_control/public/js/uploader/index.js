@@ -42,7 +42,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     }
     _override_uploader(opts) {
         var up = this.uploader;
-        if (opts) {
+        if (isPlainObject(opts)) {
             up.restrictions = opts.restrictions;
             up.restrictions.as_public = !!opts.restrictions.as_public;
         }
