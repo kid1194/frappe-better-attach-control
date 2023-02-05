@@ -1,5 +1,5 @@
 /*
-*  Frappe Better Attach Control © 2022
+*  Frappe Better Attach Control © 2023
 *  Author:  Ameen Ahmed
 *  Company: Level Up Marketing & Software Development Services
 *  Licence: Please refer to LICENSE file
@@ -42,8 +42,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     }
     _override_uploader(opts) {
         var up = this.uploader;
-        if (isPlainObject(opts)) {
-            up.restrictions = opts.restrictions;
+        if (isPlainObject(opts) && !isEmpty(opts.restrictions)) {
             up.restrictions.as_public = !!opts.restrictions.as_public;
         }
         up.dropfiles = function(e) {

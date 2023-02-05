@@ -62,7 +62,7 @@ bench build --app frappe_better_attach_control
 bench --site [sitename] install-app frappe_better_attach_control
 ```
 
-5. Check the usage section below
+5. Check the [usage](#usage) section below
 
 #### Update
 1. Go to app directory
@@ -131,13 +131,16 @@ bench restart
 ### Usage
 1. Go to Customization > Customize Form
 2. Enter the form type/name (Ex: 'User')
-3. Scroll down to the form fields area and create an **Attach** or **Attach Image** field or edit an existing custom field
-4. In the **options** property of the field, add a JSON object of the customizations you want. Example:
+3. Scroll down to the form fields area
+4. Create an **Attach** or **Attach Image** field or edit an existing custom field
+5. Inside the field's custom property, **Better Attach Options**, add a JSON object of the customizations you want. Example:
 ```
 {"allowed_file_types": ["jpg", "png", "gif"]}
 ```
 
-ℹ️ **Note: You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.**
+ℹ️ **Notes**
+1. **You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.**
+2. **The plugin creates a custom field property called Better Attach Options to protect the plugin customizations from any modification and to make the plugin work in web forms.**
 
 ---
 
@@ -150,7 +153,7 @@ bench restart
 | `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload.<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc"]`<br/>- Default: `null` or `["image/*"]` |
 | `max_number_of_files` | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br/><br/>⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br/>- Example: `4`<br/>- Default: `Value of maximum attachments set for the doctype` |
 | `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
-| `as_public` | Force uploads to be saved in public folder.<br/><br/>- Default: `false` |
+| `as_public` | Force uploads to be saved in public folder by default.<br/><br/>- Default: `false` |
 | `allow_reload` | Allow reloading attachments (Frappe >= v13.0.0).<br>ℹ️ Affect the visibility of the reload button.ℹ️<br/><br/>- Default: `true` |
 | `allow_remove` | Allow removing and clearing attachments.<br>ℹ️ Affect the visibility of the remove and clear buttons.ℹ️<br/><br/>- Default: `true` |
 

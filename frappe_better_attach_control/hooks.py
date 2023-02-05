@@ -1,4 +1,4 @@
-# Frappe Better Attach Control © 2022
+# Frappe Better Attach Control © 2023
 # Author:  Ameen Ahmed
 # Company: Level Up Marketing & Software Development Services
 # Licence: Please refer to LICENSE file
@@ -36,3 +36,8 @@ app_include_js = [
 ] if is_frappe_above_v12 else [
     '/assets/frappe_better_attach_control/js/better_attach_v12.js'
 ])
+
+
+after_install = "frappe_better_attach_control.setup.install.after_install"
+after_migrate = "frappe_better_attach_control.setup.install.after_install"
+after_uninstall = "frappe_better_attach_control.setup.uninstall.after_uninstall"

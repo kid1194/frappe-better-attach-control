@@ -1,5 +1,5 @@
 /*
-*  Frappe Better Attach Control © 2022
+*  Frappe Better Attach Control © 2023
 *  Author:  Ameen Ahmed
 *  Company: Level Up Marketing & Software Development Services
 *  Licence: Please refer to LICENSE file
@@ -115,6 +115,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         if (this.upload_options) return;
         this._update_options();
         if (this._options) this.df.options = this._options;
+        console.log('Attach Control Options', this.df.options);
         super.set_upload_options();
         if (this._options) this.df.options = this._latest_options;
     }
@@ -218,6 +219,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     // Private Methods
     _setup_control() {
         if (this._is_better) return;
+        if (!isEmpty(this.df.better_attach_options))
+            this.df.options = this.df.better_attach_options;
         this._is_better = 1;
         this._options = null;
         this._latest_options = null;
