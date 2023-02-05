@@ -115,7 +115,6 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         if (this.upload_options) return;
         this._update_options();
         if (this._options) this.df.options = this._options;
-        console.log('Attach Control Options', this.df.options);
         super.set_upload_options();
         if (this._options) this.df.options = this._latest_options;
     }

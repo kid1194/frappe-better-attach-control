@@ -93,7 +93,6 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (this.upload_options) return;
         this._update_options();
         if (this._options) this.df.options = this._options;
-        console.log('Attach Control Options', this.df.options);
         this._super();
         if (this._options) this.df.options = this._latest_options;
         if (this._images_only) {
