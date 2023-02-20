@@ -186,6 +186,7 @@ If you find bug in the plugin, please create a [bug report](https://github.com/k
 **The list of people who deserves more than a simple thank you.**
 - [CA. B.C.Chechani](https://github.com/chechani) (Testing & Debugging)
 - [MohsinAli](https://github.com/mohsinalimat) (Testing & Debugging)
+- [Robert C](https://github.com/robert1112) (Testing & Debugging)
 
 ---
 
