@@ -267,32 +267,6 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 if (v.length) v = v[0] === '/' ? new RegExp(v) : v;
                 else v = null;
             }
-            else if (t[0] === 'o' && v) {
-                t = t.split(' ');
-                let l = t.length;
-                if ((l === 2 || l === 3) && isPlainObject(v)) {
-                    let d = {};
-                    each(v, function(y, z) {
-                        z = l === 2 ? z : parseVal(z, t[1]);
-                        y = parseVal(z, t[l - 1]);
-                        if (z != null && y != null) d[z] = y;
-                    });
-                    v = !isEmpty(d) ? d : null;
-                }
-                else v = null;
-            }
-            else if (t[0] === 'a' && v) {
-                t = t.split(' ');
-                if (t.length === 2 && isArray(v)) {
-                    let d = [];
-                    each(v, function(y) {
-                        y = parseVal(z, t[1]);
-                        if (y != null) d.push(y);
-                    });
-                    v = !isEmpty(d) ? d : null;
-                }
-                else v = null;
-            }
             return v;
         }
         each([['upload_notes', 's'], ['allow_multiple', 'b']], function(k) {
