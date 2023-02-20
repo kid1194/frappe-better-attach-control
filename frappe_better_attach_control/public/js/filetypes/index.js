@@ -18,7 +18,7 @@ import is_word from './word.js';
 import get_type from './types.js';
 
 export function get_filename(path) {
-    return path.toLowerCase().split('#')[0].split('?')[0].split('/').pop();
+    return ((path.split('#')[0]).split('?')[0]).split('/').pop();
 }
 
 export function get_file_ext(path) {

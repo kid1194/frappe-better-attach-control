@@ -70,6 +70,9 @@ export function isEmpty(v) {
 export function isJson(v) {
     return isString(v) && parseJson(v) !== v;
 }
+export function isRegExp(v) {
+    return v != null && ofType(v, 'RegExp');
+}
 
 // Json
 export function parseJson(v) {

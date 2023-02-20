@@ -23,4 +23,4 @@ def after_install():
     if not existing:
         create_custom_field(dt, field, is_system_generated=False)
         frappe.clear_cache(doctype=dt)
-		frappe.db.updatedb(dt)
+        frappe.db.updatedb(dt)

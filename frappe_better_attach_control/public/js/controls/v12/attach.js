@@ -11,6 +11,7 @@ import {
     isObject,
     isPlainObject,
     isEmpty,
+    isRegExp,
     toBool,
     toArray,
     ifNull,
@@ -230,6 +231,11 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 if (isNaN(v) || v < 1) v = null;
             }
             else if (t === 'a') v = toArray(v);
+            else if (t === 'r' && v && !isRegExp(v)) {
+                v = cstr(v);
+                if (v.length) v = v[0] === '/' ? new RegExp(v) : v;
+                else v = null;
+            }
             return v;
         }
         each([['upload_notes', 's'], ['allow_multiple', 'b']], function(k) {
@@ -239,6 +245,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             [
                 ['max_file_size', 'i'], ['allowed_file_types', 'a'],
                 ['max_number_of_files', 'i'], ['as_public', 'b'],
+                ['allowed_filename', 'r'],
             ],
             function(k) {
                 tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);

@@ -10,6 +10,7 @@ import {
     isObject,
     isPlainObject,
     isEmpty,
+    isRegExp,
     error
 } from './../../utils';
 import {
@@ -33,7 +34,8 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     : {
                         max_file_size: null,
                         max_number_of_files: null,
-                        allowed_file_types: []
+                        allowed_file_types: [],
+                        allowed_filename: null,
                     }
                 );
             }
@@ -49,6 +51,56 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			if (isObject(e) && isObject(e.dataTransfer))
 			    this.add_files(e.dataTransfer.files);
 		};
+        up.check_restrictions = function(file) {
+            let { max_file_size, allowed_file_types = [], allowed_filename } = this.restrictions,
+            is_correct_type = true,
+            valid_file_size = true,
+            valid_filename = true;
+            if (!isEmpty(allowed_file_types)) {
+                is_correct_type = allowed_file_types.some(function(type) {
+                    if (type.includes('/')) {
+                        if (!file.type) return false;
+                        return file.type.match(type);
+                    }
+                    if (type[0] === '.') {
+                        return (file.name || file.file_name).endsWith(type);
+                    }
+                    return false;
+                });
+            }
+            if (max_file_size && file.size != null && file.size) {
+                valid_file_size = file.size < max_file_size;
+            }
+            if (allowed_filename) {
+                if (isRegExp(allowed_filename)) {
+                    valid_filename = file.name.match(allowed_filename);
+                } else if (!isEmpty(allowed_filename)) {
+                    valid_filename = allowed_filename === file.name;
+                }
+            }
+            if (!is_correct_type) {
+				console.warn('File skipped because of invalid file type', file);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because of invalid file type', [file.name]),
+					indicator: 'orange'
+				});
+			}
+			if (!valid_file_size) {
+			    console.warn('File skipped because of invalid file size', file.size, file);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
+					indicator: 'orange'
+				});
+			}
+			if (!valid_filename) {
+			    console.warn('File skipped because of invalid filename', file, allowed_filename);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because of invalid filename', [file.name]),
+					indicator: 'orange'
+				});
+			}
+            return is_correct_type && valid_file_size && valid_filename;
+        };
         up.show_max_files_number_warning = function(file, max_number_of_files) {
             console.warn(
                 `File skipped because it exceeds the allowed specified limit of ${max_number_of_files} uploads`,
@@ -127,9 +179,10 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-            let { max_file_size, allowed_file_types = [] } = this._restrictions,
+            let { max_file_size, allowed_file_types = [], allowed_filename } = this._restrictions,
             is_correct_type = true,
-            valid_file_size = true;
+            valid_file_size = true,
+            valid_filename = true;
             if (!isEmpty(allowed_file_types)) {
                 is_correct_type = allowed_file_types.some(function(type) {
                     if (type.includes('/')) {
@@ -145,7 +198,35 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             if (max_file_size && file.size != null && file.size) {
                 valid_file_size = file.size < max_file_size;
             }
-            return is_correct_type && valid_file_size;
+            if (allowed_filename) {
+                if (isRegExp(allowed_filename)) {
+                    valid_filename = file.name.match(allowed_filename);
+                } else if (!isEmpty(allowed_filename)) {
+                    valid_filename = allowed_filename === file.name;
+                }
+            }
+            if (!is_correct_type) {
+				console.warn('File skipped because of invalid file type', file);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because of invalid file type', [file.name]),
+					indicator: 'orange'
+				});
+			}
+			if (!valid_file_size) {
+			    console.warn('File skipped because of invalid file size', file.size, file);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
+					indicator: 'orange'
+				});
+			}
+			if (!valid_filename) {
+			    console.warn('File skipped because of invalid filename', file, allowed_filename);
+				frappe.show_alert({
+					message: __('File "{0}" was skipped because of invalid filename', [file.name]),
+					indicator: 'orange'
+				});
+			}
+            return is_correct_type && valid_file_size && valid_filename;
         };
         fb.get_files_in_folder = function(folder) {
             var me = this;
