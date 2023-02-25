@@ -219,9 +219,10 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     // Private Methods
     _setup_control() {
         if (this._is_better) return;
-        if (!isEmpty(this.df.better_attach_options))
-            this.df.options = this.df.better_attach_options;
+        if (isEmpty(this.df.better_attach_options))
+            this.df.better_attach_options = this.df.options;
         this._is_better = 1;
+        this._df_options = this.df.options;
         this._options = null;
         this._latest_options = null;
         this._value = [];
@@ -234,17 +235,22 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._prevent_input = false;
     }
     _update_options() {
+        if (this._df_options !== this.df.options && !isEmpty(this.df.options)) {
+            this.df.better_attach_options = this._df_options = this.df.options;
+        }
         if (
-            (isEmpty(this.df.options) && this._options == null)
-            || this.df.options === this._latest_options
+            (isEmpty(this.df.better_attach_options) && this._options == null)
+            || this.df.better_attach_options === this._latest_options
         ) return;
-        this._latest_options = this.df.options;
-        let opts = !isEmpty(this.df.options) && parseJson(this.df.options);
+        this._latest_options = this.df.better_attach_options;
+        let opts = !isEmpty(this.df.better_attach_options)
+            && parseJson(this.df.better_attach_options);
         if (isEmpty(opts) && this._options == null) return;
         if (isPlainObject(opts)) opts = this._parse_options(opts);
         else opts = {};
         this._reload_control(opts);
         this._options = opts.options || null;
+        console.log('Better Attach Options', opts.options);
     }
     _parse_options(opts) {
         var tmp = {options: {restrictions: {}}};
