@@ -117,7 +117,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._update_options();
         if (this._options) this.df.options = this._options;
         super.set_upload_options();
-        if (this._options) this.df.options = this._latest_options;
+        if (this._options) this.df.options = this._df_options;
     }
     set_value(value, force_set_value=false) {
         // Prevent changing value if called from event

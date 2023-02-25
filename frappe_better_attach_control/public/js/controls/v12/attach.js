@@ -90,7 +90,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._update_options();
         if (this._options) this.df.options = this._options;
         this._super();
-        if (this._options) this.df.options = this._latest_options;
+        if (this._options) this.df.options = this._df_options;
         if (this._images_only) {
             this.upload_options = (function(options) {
                 let opts = deepClone(options);
