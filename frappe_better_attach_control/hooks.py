@@ -27,9 +27,21 @@ app_include_css = [
 ] if is_frappe_above_v13 else [
     '/assets/frappe_better_attach_control/css/better_attach.css'
 ]
+better_webform_include_css = [
+    'better_attach.bundle.css'
+] if is_frappe_above_v13 else [
+    '/assets/frappe_better_attach_control/css/better_attach.css'
+]
 
 
 app_include_js = [
+    'better_attach.bundle.js'
+] if is_frappe_above_v13 else ([
+    '/assets/frappe_better_attach_control/js/better_attach.js'
+] if is_frappe_above_v12 else [
+    '/assets/frappe_better_attach_control/js/better_attach_v12.js'
+])
+better_webform_include_js = [
     'better_attach.bundle.js'
 ] if is_frappe_above_v13 else ([
     '/assets/frappe_better_attach_control/js/better_attach.js'
@@ -41,3 +53,6 @@ app_include_js = [
 after_install = "frappe_better_attach_control.setup.install.after_install"
 after_migrate = "frappe_better_attach_control.setup.install.after_install"
 after_uninstall = "frappe_better_attach_control.setup.uninstall.after_uninstall"
+
+
+update_website_context = "frappe_better_attach_control.api.website.website_context"
