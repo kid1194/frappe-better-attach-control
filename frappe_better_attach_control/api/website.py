@@ -62,4 +62,4 @@ def website_context(context):
                     context.style = style
             
             except Exception:
-            error("Unable to inject the css files to context.", throw=False)
+                error("Unable to inject the css files to context.", throw=False)
