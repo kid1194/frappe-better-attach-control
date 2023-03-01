@@ -4,7 +4,10 @@
 # Licence: Please refer to LICENSE file
 
 
+import os
+
 import frappe
+from frappe import _
 
 from .common import error
 
@@ -25,10 +28,9 @@ def website_context(context):
             )
         except Exception:
             fields = 0
-            error("Unable to get the Attach fields of the web form.", throw=False)
+            error(_("Unable to get the Attach fields of the web form."), throw=False)
         
         if fields > 0:
-        
             app_name = "frappe_better_attach_control"
             
             try:
@@ -38,14 +40,17 @@ def website_context(context):
                         js_files = [js_files]
                     
                     script = context.get("script", "")
-                    for path in js_files:
-                        path = frappe.get_app_path(app_name, *path.strip("/").split("/"))
-                        custom_js = frappe.render_template(open(path).read(), context)
-                        script = "\n\n".join([script, custom_js])
+                    for js in js_files:
+                        path = frappe.get_app_path(app_name, *js.strip("/").split("/"))
+                        if os.path.exists(path):
+                            custom_js = frappe.render_template(open(path).read(), context)
+                            script = "\n\n".join([script, custom_js])
+                        else:
+                            error(_("Unable to inject the js file \"{0}\" to context.").format(js), throw=False)
                         
                     context.script = script
             except Exception:
-                error("Unable to inject the js files to context.", throw=False)
+                error(_("Unable to inject the js files to context."), throw=False)
             
             try:
                 css_files = frappe.get_hooks("better_webform_include_css", default=None, app_name=app_name)
@@ -54,12 +59,15 @@ def website_context(context):
                         css_files = [css_files]
                     
                     style = context.get("style", "")
-                    for path in css_files:
-                        path = frappe.get_app_path(app_name, *path.strip("/").split("/"))
-                        custom_css = open(path).read()
-                        style = "\n\n".join([style, custom_css])
+                    for css in css_files:
+                        path = frappe.get_app_path(app_name, *css.strip("/").split("/"))
+                        if os.path.exists(path):
+                            custom_css = open(path).read()
+                            style = "\n\n".join([style, custom_css])
+                        else:
+                            error(_("Unable to inject the css file \"{0}\" to context.").format(css), throw=False)
                         
                     context.style = style
             
             except Exception:
-                error("Unable to inject the css files to context.", throw=False)
+                error(_("Unable to inject the css files to context."), throw=False)
