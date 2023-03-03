@@ -240,7 +240,6 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         else opts = {};
         this._reload_control(opts);
         this._options = opts.options || null;
-        console.log('Better Attach Options', opts.options);
     },
     _parse_options: function(opts) {
         var tmp = {options: {restrictions: {}}};

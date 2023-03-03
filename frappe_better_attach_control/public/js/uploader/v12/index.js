@@ -25,25 +25,9 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         super(opts || {});
         if (!this.uploader) return;
         this._override_uploader(opts);
-        console.log('Better Attach File Uploader Options', isPlainObject(opts) && !isEmpty(opts.restrictions)
-            ? opts.restrictions
-            : {
-                max_file_size: null,
-                max_number_of_files: null,
-                allowed_file_types: [],
-                allowed_filename: null,
-            });
         var me = this;
         this.uploader.$watch('show_file_browser', function(show_file_browser) {
             if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
-                console.log('Better Attach File Browser Options', isPlainObject(opts) && !isEmpty(opts.restrictions)
-                    ? opts.restrictions
-                    : {
-                        max_file_size: null,
-                        max_number_of_files: null,
-                        allowed_file_types: [],
-                        allowed_filename: null,
-                    });
                 me._override_file_browser(
                     isPlainObject(opts) && !isEmpty(opts.restrictions)
                     ? opts.restrictions
