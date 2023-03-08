@@ -243,9 +243,14 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             }
             return v;
         }
-        each([['upload_notes', 's'], ['allow_multiple', 'b']], function(k) {
-            tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
-        });
+        each(
+            [
+                ['upload_notes', 's'], ['allow_multiple', 'b'],
+                ['disable_file_browser', 'b'],
+            ], function(k) {
+                tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
+            }
+        );
         each(
             [
                 ['max_file_size', 'i'], ['allowed_file_types', 'a'],

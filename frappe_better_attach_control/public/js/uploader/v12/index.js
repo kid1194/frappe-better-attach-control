@@ -23,29 +23,29 @@ import {
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
         super(opts || {});
-        if (!this.uploader) return;
-        this._override_uploader(opts);
-        var me = this;
-        this.uploader.$watch('show_file_browser', function(show_file_browser) {
-            if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
-                me._override_file_browser(
-                    isPlainObject(opts) && !isEmpty(opts.restrictions)
-                    ? opts.restrictions
-                    : {
-                        max_file_size: null,
-                        max_number_of_files: null,
-                        allowed_file_types: [],
-                        allowed_filename: null,
-                    }
-                );
-            }
-        });
+        if (this.uploader) this._override_uploader(opts);
     }
     _override_uploader(opts) {
         var up = this.uploader;
-        if (isPlainObject(opts) && !isEmpty(opts.restrictions)) {
-            up.restrictions.as_public = !!opts.restrictions.as_public;
-        }
+        if (up._is_better) return;
+        up._is_better = 1;
+        opts = isPlainObject(opts) ? opts : {};
+        var me = this;
+        up.$watch('show_file_browser', function(show_file_browser) {
+            if (!show_file_browser || !up.$refs.file_browser || up.$refs.file_browser._is_better) return;
+            me._override_file_browser(
+                up.$refs.file_browser,
+                !isEmpty(opts.restrictions)
+                ? opts.restrictions
+                : {
+                    max_file_size: null,
+                    max_number_of_files: null,
+                    allowed_file_types: [],
+                    allowed_filename: null,
+                }
+            );
+        });
+        if (!isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
         up.dropfiles = function(e) {
 			this.is_dragging = false;
 			if (isObject(e) && isObject(e.dataTransfer))
@@ -174,8 +174,8 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             return file ? this.upload_file(file) : Promise.reject();
         };
     }
-    _override_file_browser(opts) {
-        var fb = this.uploader.$refs.file_browser;
+    _override_file_browser(fb, opts) {
+        fb._is_better = 1;
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;

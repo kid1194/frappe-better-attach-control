@@ -1408,28 +1408,31 @@
   frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
       super(opts || {});
-      if (!this.uploader)
-        return;
-      this._override_uploader(opts);
-      var me = this;
-      this.uploader.$watch("show_file_browser", function(show_file_browser) {
-        if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
-          me._override_file_browser(
-            isPlainObject(opts) && !isEmpty(opts.restrictions) ? opts.restrictions : {
-              max_file_size: null,
-              max_number_of_files: null,
-              allowed_file_types: [],
-              allowed_filename: null
-            }
-          );
-        }
-      });
+      if (this.uploader)
+        this._override_uploader(opts);
     }
     _override_uploader(opts) {
       var up = this.uploader;
-      if (isPlainObject(opts) && !isEmpty(opts.restrictions)) {
+      if (up._is_better)
+        return;
+      up._is_better = 1;
+      opts = isPlainObject(opts) ? opts : {};
+      var me = this;
+      up.$watch("show_file_browser", function(show_file_browser) {
+        if (!show_file_browser || !up.$refs.file_browser || up.$refs.file_browser._is_better)
+          return;
+        me._override_file_browser(
+          up.$refs.file_browser,
+          !isEmpty(opts.restrictions) ? opts.restrictions : {
+            max_file_size: null,
+            max_number_of_files: null,
+            allowed_file_types: [],
+            allowed_filename: null
+          }
+        );
+      });
+      if (!isEmpty(opts.restrictions))
         up.restrictions.as_public = !!opts.restrictions.as_public;
-      }
       up.dropfiles = function(e) {
         up.is_dragging = false;
         if (isObject(e) && isObject(e.dataTransfer))
@@ -1518,7 +1521,6 @@
         files = files.filter(up.check_restrictions);
         if (isEmpty(files))
           return !is_single ? [] : null;
-        var me = up;
         files = files.map(function(file) {
           let is_image2 = file.type.startsWith("image");
           return {
@@ -1530,7 +1532,7 @@
             total: 0,
             failed: false,
             uploading: false,
-            private: !me.restrictions.as_public || !is_image2
+            private: !up.restrictions.as_public || !is_image2
           };
         });
         return !is_single ? files : files[0];
@@ -1540,9 +1542,9 @@
         if (max_number_of_files) {
           var uploaded = (up.files || []).length, total = uploaded + files.length;
           if (total > max_number_of_files) {
-            var slice_index = max_number_of_files - uploaded - 1, me = up;
+            var slice_index = max_number_of_files - uploaded - 1;
             files.slice(slice_index).forEach(function(file) {
-              me.show_max_files_number_warning(file, max_number_of_files);
+              up.show_max_files_number_warning(file, max_number_of_files);
             });
             files = files.slice(0, max_number_of_files);
           }
@@ -1560,8 +1562,8 @@
         return file ? up.upload_file(file) : Promise.reject();
       };
     }
-    _override_file_browser(opts) {
-      var fb = this.uploader.$refs.file_browser;
+    _override_file_browser(fb, opts) {
+      fb._is_better = 1;
       fb._restrictions = opts;
       fb.check_restrictions = function(file) {
         if (file.is_folder)
@@ -1614,7 +1616,6 @@
         return is_correct_type && valid_file_size && valid_filename;
       };
       fb.get_files_in_folder = function(folder) {
-        var me = fb;
         return frappe.call(
           "frappe_better_attach_control.api.get_files_in_folder",
           { folder }
@@ -1630,7 +1631,7 @@
                 f.size = 0;
               return f;
             });
-            files = files.filter(me.check_restrictions);
+            files = files.filter(fb.check_restrictions);
             files.sort(function(a, b) {
               if (a.is_folder && b.is_folder) {
                 return a.modified < b.modified ? -1 : 1;
@@ -1894,9 +1895,16 @@
         }
         return v;
       }
-      each([["upload_notes", "s"], ["allow_multiple", "b"]], function(k) {
-        tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
-      });
+      each(
+        [
+          ["upload_notes", "s"],
+          ["allow_multiple", "b"],
+          ["disable_file_browser", "b"]
+        ],
+        function(k) {
+          tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
+        }
+      );
       each(
         [
           ["max_file_size", "i"],

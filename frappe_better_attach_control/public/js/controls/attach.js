@@ -274,9 +274,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             }
             return v;
         }
-        each([['upload_notes', 's'], ['allow_multiple', 'b']], function(k) {
-            tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
-        });
+        each(
+            [
+                ['upload_notes', 's'], ['allow_multiple', 'b'],
+                ['disable_file_browser', 'b'], ['dialog_title', 's'],
+            ], function(k) {
+                tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
+            }
+        );
         each(
             [
                 ['max_file_size', 'i'], ['allowed_file_types', 'a'],
@@ -287,6 +292,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
             }
         );
+        if (tmp.options.dialog_title == null) delete tmp.options.dialog_title;
         return tmp;
     }
     _reload_control(opts) {

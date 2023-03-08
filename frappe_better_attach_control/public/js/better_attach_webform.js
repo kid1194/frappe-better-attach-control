@@ -142,6 +142,15 @@
     }
     return flt(t, 2, "#,###.##") + " " + FILE_SIZES[i];
   }
+  function log() {
+    var pre = "[Better Attach]: ";
+    each(arguments, function(v) {
+      if (isString(v))
+        console.log(pre + v);
+      else
+        console.log(pre, v);
+    });
+  }
   function elog() {
     var pre = "[Better Attach]: ";
     each(arguments, function(v) {
@@ -1408,35 +1417,39 @@
   frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
       super(opts || {});
-      if (!this.uploader)
-        return;
-      this._override_uploader(opts);
-      var me = this;
-      this.uploader.$watch("show_file_browser", function(show_file_browser) {
-        if (show_file_browser && !me.uploader.$refs.file_browser._restrictions) {
-          me._override_file_browser(
-            isPlainObject(opts) && !isEmpty(opts.restrictions) ? opts.restrictions : {
-              max_file_size: null,
-              max_number_of_files: null,
-              allowed_file_types: [],
-              crop_image_aspect_ratio: null,
-              allowed_filename: null
-            }
-          );
-        }
-      });
+      if (this.uploader)
+        this._override_uploader(opts);
     }
     _override_uploader(opts) {
       var up = this.uploader;
-      if (isPlainObject(opts) && !isEmpty(opts.restrictions)) {
+      if (up._is_better)
+        return;
+      up._is_better = 1;
+      opts = isPlainObject(opts) ? opts : {};
+      var me = this;
+      up.$watch("show_file_browser", function(show_file_browser) {
+        if (!show_file_browser || !up.$refs.file_browser || up.$refs.file_browser._is_better)
+          return;
+        me._override_file_browser(
+          up.$refs.file_browser,
+          !isEmpty(opts.restrictions) ? opts.restrictions : {
+            max_file_size: null,
+            max_number_of_files: null,
+            allowed_file_types: [],
+            crop_image_aspect_ratio: null,
+            allowed_filename: null
+          }
+        );
+      });
+      if (!isEmpty(opts.restrictions))
         up.restrictions.as_public = !!opts.restrictions.as_public;
-      }
       up.dropfiles = function(e) {
         up.is_dragging = false;
         if (isObject(e) && isObject(e.dataTransfer))
           up.add_files(e.dataTransfer.files);
       };
       up.check_restrictions = function(file) {
+        log("Checking upload restrictions");
         let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
         if (!isEmpty(allowed_file_types)) {
           is_correct_type = allowed_file_types.some(function(type) {
@@ -1485,6 +1498,7 @@
         return is_correct_type && valid_file_size && valid_filename;
       };
       up.prepare_files = function(file_array) {
+        log("Preparing uploaded file");
         let is_single = isPlainObject(file_array), files = is_single ? [file_array] : Array.from(file_array);
         files = files.map(function(f) {
           if (f.name == null)
@@ -1498,7 +1512,6 @@
         files = files.filter(up.check_restrictions);
         if (isEmpty(files))
           return !is_single ? [] : null;
-        var me = up;
         files = files.map(function(file) {
           let is_image2 = file.type.startsWith("image"), size_kb = file.size ? file.size / 1024 : 0;
           return {
@@ -1515,24 +1528,25 @@
             request_succeeded: false,
             error_message: null,
             uploading: false,
-            private: !me.restrictions.as_public
+            private: !up.restrictions.as_public
           };
         });
         return !is_single ? files : files[0];
       };
       up.add_files = function(file_array) {
+        log("Adding uploaded file");
         let files = up.prepare_files(file_array), max_number_of_files = up.restrictions.max_number_of_files;
         if (max_number_of_files) {
           let uploaded = (up.files || []).length, total = uploaded + files.length;
           if (total > max_number_of_files) {
             let slice_index = max_number_of_files - uploaded - 1;
-            var me = up;
             files.slice(slice_index).forEach(function(file) {
-              me.show_max_files_number_warning(file, me.doctype);
+              up.show_max_files_number_warning(file, up.doctype);
             });
             files = files.slice(0, max_number_of_files);
           }
         }
+        log("Adding uploaded file to files list");
         up.files = up.files.concat(files);
         if (up.files.length === 1 && !up.allow_multiple && up.restrictions.crop_image_aspect_ratio != null && up.files[0].is_image && !up.files[0].file_obj.type.includes("svg")) {
           up.toggle_image_cropper(0);
@@ -1563,10 +1577,11 @@
         }
       };
     }
-    _override_file_browser(opts) {
-      var fb = this.uploader.$refs.file_browser;
+    _override_file_browser(fb, opts) {
+      fb._is_better = 1;
       fb._restrictions = opts;
       fb.check_restrictions = function(file) {
+        log("Checking upload restrictions");
         if (file.is_folder)
           return true;
         let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
@@ -1617,7 +1632,7 @@
         return is_correct_type && valid_file_size && valid_filename;
       };
       fb.get_files_in_folder = function(folder, start) {
-        var me = fb;
+        log("Getting folder files", folder);
         return frappe.call(
           "frappe_better_attach_control.api.get_files_in_folder",
           {
@@ -1637,7 +1652,7 @@
                 f.size = 0;
               return f;
             });
-            files = files.filter(me.check_restrictions);
+            files = files.filter(fb.check_restrictions);
             files.sort(function(a, b) {
               if (a.is_folder && b.is_folder) {
                 return a.modified < b.modified ? -1 : 1;
@@ -1649,7 +1664,7 @@
               return 0;
             });
             files = files.map(function(file) {
-              return me.make_file_node(file);
+              return fb.make_file_node(file);
             });
           }
           return { files, has_more };
@@ -1662,7 +1677,7 @@
         }
         if (fb.search_text.length < 3)
           return;
-        var me = fb;
+        log("Searching files by name");
         frappe.call(
           "frappe_better_attach_control.api.get_files_by_search_text",
           { text: fb.search_text }
@@ -1678,16 +1693,16 @@
                 f.size = 0;
               return f;
             });
-            files = files.filter(me.check_restrictions);
+            files = files.filter(fb.check_restrictions);
             if (!isEmpty(files)) {
               files = files.map(function(file) {
-                return me.make_file_node(file);
+                return fb.make_file_node(file);
               });
             }
           }
-          if (!me.folder_node)
-            me.folder_node = me.node;
-          me.node = {
+          if (!fb.folder_node)
+            fb.folder_node = fb.node;
+          fb.node = {
             label: __("Search Results"),
             value: "",
             children: files,
@@ -1789,24 +1804,50 @@
       this._update_options();
       if (this._options)
         this.df.options = this._options;
-      super.set_upload_options();
+      var me = this;
+      let options = {
+        allow_multiple: false,
+        on_success: function(file) {
+          me.on_upload_complete(file);
+          me.toggle_reload_button();
+        },
+        restrictions: {}
+      };
+      if (this.frm) {
+        options.doctype = this.frm.doctype;
+        options.docname = this.frm.docname;
+        options.fieldname = this.df.fieldname;
+      }
+      if (this.df.options)
+        Object.assign(options, this.df.options);
+      this.upload_options = options;
       if (this._options)
         this.df.options = this._df_options;
     }
     set_value(value, force_set_value = false) {
-      if (this._prevent_input)
+      if (this._prevent_input) {
+        log("Setting value is prevented");
         return Promise.resolve();
-      if (this._value.indexOf(value) >= 0)
+      }
+      if (this._value.indexOf(value) >= 0) {
+        log("Value already exist");
         value = this.value;
-      else
+      } else {
+        log("Setting value");
         value = this._set_value(value);
+      }
       return super.set_value(value, force_set_value);
     }
     set_input(value, dataurl) {
-      if (this._prevent_input)
+      if (this._prevent_input) {
+        log("Setting input is prevented");
         return;
+      }
       var me = this;
       if (isEmpty(value)) {
+        log("Input value is empty");
+        log("Removing uploaded files");
+        log("Resetting input");
         if (this._value.length) {
           this._remove_files(this._value, function(ret) {
             if (!cint(ret))
@@ -1818,10 +1859,13 @@
           this._reset_value();
         return;
       }
-      if (this._value.indexOf(value) >= 0)
+      if (this._value.indexOf(value) >= 0) {
+        log("Input value already exist");
         return;
+      }
       let val = toArray(value, null);
       if (isArray(val)) {
+        log("Setting input array value");
         if (!this._allow_multiple)
           this.set_input(val[0] || null);
         else {
@@ -1834,6 +1878,7 @@
         }
         return;
       }
+      log("Setting input value");
       this.value = this._set_value(value);
       this.$input.toggle(false);
       let file_url_parts = value.match(/^([^:]+),(.+):(.+)$/), filename = null;
@@ -1853,10 +1898,13 @@
       }
     }
     async on_upload_complete(attachment) {
+      log("Upload completed");
       if (this.frm) {
+        log("Updating form");
         await this.parse_validate_and_set_in_model(attachment.file_url);
         this.frm.attachments.update_attachment(attachment);
         if (this._allow_multiple) {
+          log("Updating form with multiple uploads");
           let up = this.file_uploader.uploader;
           if (up && up.files.every(function(file) {
             return !file.failed && file.request_succeeded;
@@ -1864,6 +1912,7 @@
             this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
           }
         } else {
+          log("Updating form with single upload");
           this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
         }
       }
@@ -1962,9 +2011,17 @@
         }
         return v;
       }
-      each([["upload_notes", "s"], ["allow_multiple", "b"]], function(k) {
-        tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
-      });
+      each(
+        [
+          ["upload_notes", "s"],
+          ["allow_multiple", "b"],
+          ["disable_file_browser", "b"],
+          ["dialog_title", "s"]
+        ],
+        function(k) {
+          tmp.options[k[0]] = parseVal(opts[k[0]], k[1]);
+        }
+      );
       each(
         [
           ["max_file_size", "i"],
@@ -1978,6 +2035,8 @@
           tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
         }
       );
+      if (tmp.options.dialog_title == null)
+        delete tmp.options.dialog_title;
       return tmp;
     }
     _reload_control(opts) {
