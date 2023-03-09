@@ -1801,8 +1801,6 @@
           this._reset_value();
         return;
       }
-      if (this._value.indexOf(value) >= 0)
-        return;
       var val = toArray(value, null);
       if (isArray(val)) {
         if (!this._allow_multiple)
@@ -1817,7 +1815,8 @@
         }
         return;
       }
-      this.value = this._set_value(value);
+      if (this._value.indexOf(value) < 0)
+        this.value = this._set_value(value);
       this.$input.toggle(false);
       var file_url_parts = value.match(/^([^:]+),(.+):(.+)$/), filename = null;
       if (file_url_parts) {

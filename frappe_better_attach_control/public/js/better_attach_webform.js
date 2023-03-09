@@ -1804,23 +1804,7 @@
       this._update_options();
       if (this._options)
         this.df.options = this._options;
-      var me = this;
-      let options = {
-        allow_multiple: false,
-        on_success: function(file) {
-          me.on_upload_complete(file);
-          me.toggle_reload_button();
-        },
-        restrictions: {}
-      };
-      if (this.frm) {
-        options.doctype = this.frm.doctype;
-        options.docname = this.frm.docname;
-        options.fieldname = this.df.fieldname;
-      }
-      if (this.df.options)
-        Object.assign(options, this.df.options);
-      this.upload_options = options;
+      super.set_upload_options();
       if (this._options)
         this.df.options = this._df_options;
     }
@@ -1859,10 +1843,6 @@
           this._reset_value();
         return;
       }
-      if (this._value.indexOf(value) >= 0) {
-        log("Input value already exist");
-        return;
-      }
       let val = toArray(value, null);
       if (isArray(val)) {
         log("Setting input array value");
@@ -1879,7 +1859,8 @@
         return;
       }
       log("Setting input value");
-      this.value = this._set_value(value);
+      if (this._value.indexOf(value) < 0)
+        this.value = this._set_value(value);
       this.$input.toggle(false);
       let file_url_parts = value.match(/^([^:]+),(.+):(.+)$/), filename = null;
       if (file_url_parts) {
