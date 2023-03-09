@@ -23,7 +23,7 @@ function propertyOf(v, k) {
 }
 
 // Common Checks
-function isString(v) {
+export function isString(v) {
     return v != null && ofType(v, 'String');
 }
 function isObjectLike(v) {
@@ -135,6 +135,15 @@ export function toArray(v, def) {
         return isArray(v) ? v : def;
     }
     return [v];
+}
+export function flattenArray(v, t) {
+    if (!isArray(v)) return [];
+    t = t || [];
+    each(v, function(a) {
+        if (isArray(a)) flattenArray(a, t);
+        else t.push(a);
+    });
+    return t;
 }
 
 // Function

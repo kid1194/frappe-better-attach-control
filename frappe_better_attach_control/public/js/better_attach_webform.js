@@ -126,6 +126,18 @@
     }
     return [v];
   }
+  function flattenArray(v, t) {
+    if (!isArray(v))
+      return [];
+    t = t || [];
+    each(v, function(a) {
+      if (isArray(a))
+        flattenArray(a, t);
+      else
+        t.push(a);
+    });
+    return t;
+  }
   function fnCall(f, a, b) {
     if (isFunction(f))
       return f.apply(b, toArray(a));
@@ -1813,13 +1825,9 @@
         log("Setting value is prevented");
         return Promise.resolve();
       }
-      if (this._value.indexOf(value) >= 0) {
-        log("Value already exist");
-        value = this.value;
-      } else {
-        log("Setting value");
-        value = this._set_value(value);
-      }
+      value = this._set_value(value);
+      if (!this.frm)
+        this._updating_input = true;
       return super.set_value(value, force_set_value);
     }
     set_input(value, dataurl) {
@@ -1827,10 +1835,16 @@
         log("Setting input is prevented");
         return;
       }
+      if (this._updating_input) {
+        log("Updating input only");
+        this._updating_input = false;
+        if (this._value.length)
+          this._update_input();
+        return;
+      }
       var me = this;
-      if (isEmpty(value)) {
-        log("Input value is empty");
-        log("Removing uploaded files");
+      if (value === null) {
+        log("Clearing uploads");
         log("Resetting input");
         if (this._value.length) {
           this._remove_files(this._value, function(ret) {
@@ -1843,40 +1857,40 @@
           this._reset_value();
         return;
       }
-      let val = toArray(value, null);
-      if (isArray(val)) {
-        log("Setting input array value");
-        if (!this._allow_multiple)
-          this.set_input(val[0] || null);
-        else {
-          let last = val.pop();
-          each(val, function(v) {
-            if (me._value.indexOf(v) < 0)
-              me._set_value(v);
-          });
-          this.set_input(last);
-        }
+      if (isEmpty(value)) {
+        log("Input value is empty");
         return;
       }
+      let val = toArray(value, null);
+      if (isArray(val)) {
+        if (!val.length)
+          return;
+        log("Setting input value array");
+        val = flattenArray(val);
+        let update = 0;
+        if (!this._allow_multiple) {
+          value = val[0];
+          if (!isEmpty(value) && isString(value) && this._value.indexOf(value) < 0) {
+            this._set_value(value);
+            update = 1;
+          }
+        } else {
+          each(val, function(v) {
+            if (!isEmpty(v) && isString(v) && me._value.indexOf(value) < 0) {
+              me._set_value(v);
+              update = 1;
+            }
+          });
+        }
+        if (update)
+          this._update_input();
+        return;
+      }
+      if (!isString(value))
+        return;
       log("Setting input value");
-      if (this._value.indexOf(value) < 0)
-        this.value = this._set_value(value);
-      this.$input.toggle(false);
-      let file_url_parts = value.match(/^([^:]+),(.+):(.+)$/), filename = null;
-      if (file_url_parts) {
-        filename = file_url_parts[1];
-        dataurl = file_url_parts[2] + ":" + file_url_parts[3];
-      }
-      if (!filename)
-        filename = dataurl ? value : value.split("/").pop();
-      let $link = this.$value.toggle(true).find(".attached-file-link");
-      if (this._allow_multiple) {
-        $link.html(
-          this._value.length > 1 ? this._value.length + " " + __("files uploaded") : filename
-        ).attr("href", "#");
-      } else {
-        $link.html(filename).attr("href", dataurl || value);
-      }
+      this.value = this._set_value(value);
+      this._update_input(value, dataurl);
     }
     async on_upload_complete(attachment) {
       log("Upload completed");
@@ -1886,8 +1900,8 @@
         this.frm.attachments.update_attachment(attachment);
         if (this._allow_multiple) {
           log("Updating form with multiple uploads");
-          let up = this.file_uploader.uploader;
-          if (up && up.files.every(function(file) {
+          let up = this.file_uploader && this.file_uploader.uploader;
+          if (up && up.files && up.files.every(function(file) {
             return !file.failed && file.request_succeeded;
           })) {
             this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
@@ -1907,6 +1921,8 @@
     }
     refresh() {
       super.refresh();
+      if (!isEmpty(this.df.options) && isPlainObject(this.df.options) && this._df_options !== this.df.options)
+        this._df_options = this.df.options;
       this._update_options();
     }
     // Custom Methods
@@ -1933,7 +1949,7 @@
     _setup_control() {
       if (this._is_better)
         return;
-      if (isEmpty(this.df.better_attach_options))
+      if (isEmpty(this.df.better_attach_options) && !isEmpty(this.df.options))
         this.df.better_attach_options = this.df.options;
       this._is_better = 1;
       this._df_options = this.df.options;
@@ -1947,23 +1963,21 @@
       this._allow_remove = true;
       this._display_ready = false;
       this._prevent_input = false;
+      this._updating_input = false;
     }
     _update_options() {
-      if (this._df_options !== this.df.options && !isEmpty(this.df.options)) {
-        this.df.better_attach_options = this._df_options = this.df.options;
+      if ((isEmpty(this.df.better_attach_options) || isPlainObject(this.df.better_attach_options)) && this._latest_options !== this.df.better_attach_options) {
+        this._latest_options = this.df.better_attach_options;
+        let opts = !isEmpty(this.df.better_attach_options) && parseJson(this.df.better_attach_options);
+        if (isEmpty(opts) && this._options == null)
+          return;
+        if (isPlainObject(opts))
+          opts = this._parse_options(opts);
+        else
+          opts = {};
+        this._reload_control(opts);
+        this._options = opts.options || null;
       }
-      if (isEmpty(this.df.better_attach_options) && this._options == null || this.df.better_attach_options === this._latest_options)
-        return;
-      this._latest_options = this.df.better_attach_options;
-      let opts = !isEmpty(this.df.better_attach_options) && parseJson(this.df.better_attach_options);
-      if (isEmpty(opts) && this._options == null)
-        return;
-      if (isPlainObject(opts))
-        opts = this._parse_options(opts);
-      else
-        opts = {};
-      this._reload_control(opts);
-      this._options = opts.options || null;
     }
     _parse_options(opts) {
       var tmp = { options: { restrictions: {} } };
@@ -2039,38 +2053,37 @@
             this.disable_remove();
         }
       }
-      let allow_multiple = opts.options && !!opts.options.allow_multiple;
-      if (allow_multiple !== this._allow_multiple) {
-        this._allow_multiple = allow_multiple;
-        this._set_max_attachments();
-        if (this._display_ready) {
-          this._setup_display();
-          if (this._value.length) {
-            let value = this._value.pop();
-            if (this._allow_multiple) {
-              this._reset_value();
-              this.set_input(value);
-            } else {
-              if (this._value.length) {
-                var me = this;
-                this._remove_files(this._value, function(ret) {
-                  if (!cint(ret))
-                    error("Unable to delete the uploaded attachments.");
-                  else {
-                    me._reset_value();
-                    me.set_input(value);
-                  }
-                });
-              } else {
-                this._reset_value();
-                this.set_input(value);
-              }
-            }
-          }
+      let allow_multiple = opts.options && toBool(opts.options.allow_multiple);
+      if (allow_multiple === this._allow_multiple)
+        return;
+      this._allow_multiple = allow_multiple;
+      this._set_max_attachments();
+      if (!this._display_ready)
+        return;
+      this._setup_display();
+      if (!this._value.length)
+        return;
+      let value = this._value.pop();
+      if (this._allow_multiple) {
+        this._reset_value();
+        this.set_input(value);
+      } else {
+        if (this._value.length) {
+          var failed = 0;
+          this._remove_files(this._value, function(ret) {
+            if (!cint(ret))
+              failed++;
+          });
+          if (failed)
+            error("Unable to delete the uploaded attachments.");
         }
+        this._reset_value();
+        this.set_input(value);
       }
     }
     _set_value(value) {
+      if (this._value.indexOf(value) >= 0)
+        return value;
       this._value.push(value);
       if (this._allow_multiple) {
         this.value = toJson(this._value);
@@ -2382,6 +2395,25 @@
       this._setup_dialog();
       this._files_row.addClass("hide");
       this._preview_row.removeClass("hide");
+    }
+    _update_input(value, dataurl) {
+      value = value || this._value[this._value.length - 1];
+      this.$input.toggle(false);
+      let file_url_parts = value.match(/^([^:]+),(.+):(.+)$/), filename = null;
+      if (file_url_parts) {
+        filename = file_url_parts[1];
+        dataurl = file_url_parts[2] + ":" + file_url_parts[3];
+      }
+      if (!filename)
+        filename = dataurl ? value : value.split("/").pop();
+      let $link = this.$value.toggle(true).find(".attached-file-link");
+      if (this._allow_multiple) {
+        $link.html(
+          this._value.length > 1 ? this._value.length + " " + __("files uploaded") : filename
+        ).attr("href", "#");
+      } else {
+        $link.html(filename).attr("href", dataurl || value);
+      }
     }
     _reset_input() {
       this.dataurl = null;
