@@ -48,24 +48,20 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         });
         if (!isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
         up.dropfiles = function(e) {
-			this.is_dragging = false;
+			up.is_dragging = false;
 			if (isObject(e) && isObject(e.dataTransfer))
-			    this.add_files(e.dataTransfer.files);
+			    up.add_files(e.dataTransfer.files);
 		};
         up.check_restrictions = function(file) {
-            let { max_file_size, allowed_file_types = [], allowed_filename } = this.restrictions,
+            let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
             if (!isEmpty(allowed_file_types)) {
                 is_correct_type = allowed_file_types.some(function(type) {
-                    if (type.includes('/')) {
-                        if (!file.type) return false;
-                        return file.type.match(type);
-                    }
-                    if (type[0] === '.') {
-                        return (file.name || file.file_name).endsWith(type);
-                    }
+                    if (isRegExp(type)) return file.type && type.test(file.type);
+                    if (type.includes('/')) return file.type && file.type === type;
+                    if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
                     return false;
                 });
             }
@@ -111,9 +107,8 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 if (f.size == null) f.size = 0;
                 return f;
             });
-            files = files.filter(this.check_restrictions);
+            files = files.filter(up.check_restrictions);
             if (isEmpty(files)) return !is_single ? [] : null;
-            var me = this;
             files = files.map(function(file) {
                 let is_image =  file.type.startsWith('image'),
                 size_kb = file.size ? file.size / 1024 : 0;
@@ -131,55 +126,54 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     request_succeeded: false,
                     error_message: null,
                     uploading: false,
-                    private: !me.restrictions.as_public,
+                    private: !up.restrictions.as_public,
                 };
             });
             return !is_single ? files : files[0];
         };
         up.add_files = function(file_array) {
-            let files = this.prepare_files(file_array),
-            max_number_of_files = this.restrictions.max_number_of_files;
+            let files = up.prepare_files(file_array),
+            max_number_of_files = up.restrictions.max_number_of_files;
             if (max_number_of_files) {
-                let uploaded = (this.files || []).length,
+                let uploaded = (up.files || []).length,
                 total = uploaded + files.length;
                 if (total > max_number_of_files) {
                     let slice_index = max_number_of_files - uploaded - 1;
-                    var me = this;
                     files.slice(slice_index).forEach(function(file) {
-                        me.show_max_files_number_warning(file, me.doctype);
+                        up.show_max_files_number_warning(file, up.doctype);
                     });
                     files = files.slice(0, max_number_of_files);
                 }
             }
-            this.files = this.files.concat(files);
+            up.files = up.files.concat(files);
             if (
-                this.files.length === 1 && !this.allow_multiple
-                && this.restrictions.crop_image_aspect_ratio != null
-                && this.files[0].is_image
-                && !this.files[0].file_obj.type.includes('svg')
+                up.files.length === 1 && !up.allow_multiple
+                && up.restrictions.crop_image_aspect_ratio != null
+                && up.files[0].is_image
+                && !up.files[0].file_obj.type.includes('svg')
             ) {
-                this.toggle_image_cropper(0);
+                up.toggle_image_cropper(0);
             }
         };
         up.upload_via_web_link = function() {
-            let file_url = this.$refs.web_link.url;
+            let file_url = up.$refs.web_link.url;
             if (!file_url) {
                 error('Invalid URL');
-                this.close_dialog = true;
+                up.close_dialog = true;
                 return Promise.reject();
             }
             file_url = decodeURI(file_url);
-            this.close_dialog = true;
-            let file = this.prepare_files({file_url});
-            return file ? this.upload_file(file) : Promise.reject();
+            up.close_dialog = true;
+            let file = up.prepare_files({file_url});
+            return file ? up.upload_file(file) : Promise.reject();
         };
         up.google_drive_callback = function(data) {
             if (data.action == google.picker.Action.PICKED) {
-                let file = this.prepare_files({
+                let file = up.prepare_files({
                     file_url: data.docs[0].url,
                     file_name: data.docs[0].name
                 });
-                if (file) this.upload_file(file);
+                if (file) up.upload_file(file);
             } else if (data.action == google.picker.Action.CANCEL) {
                 cur_frm.attachments.new_attachment();
             }
@@ -190,19 +184,15 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-            let { max_file_size, allowed_file_types = [], allowed_filename } = this._restrictions,
+            let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
             if (!isEmpty(allowed_file_types)) {
                 is_correct_type = allowed_file_types.some(function(type) {
-                    if (type.includes('/')) {
-                        if (!file.type) return false;
-                        return file.type.match(type);
-                    }
-                    if (type[0] === '.') {
-                        return (file.name || file.file_name).endsWith(type);
-                    }
+                    if (isRegExp(type)) return file.type && type.test(file.type);
+                    if (type.includes('/')) return file.type && file.type === type;
+                    if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
                     return false;
                 });
             }
@@ -240,13 +230,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			return is_correct_type && valid_file_size && valid_filename;
         };
         fb.get_files_in_folder = function(folder, start) {
-            var me = this;
             return frappe.call(
                 'frappe_better_attach_control.api.get_files_in_folder',
                 {
                     folder,
                     start,
-                    page_length: this.page_length
+                    page_length: fb.page_length
                 }
             ).then(function(r) {
                 let { files = [], has_more = false } = r.message || {};
@@ -257,7 +246,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         if (f.size == null) f.size = 0;
                         return f;
                     });
-                    files = files.filter(me.check_restrictions);
+                    files = files.filter(fb.check_restrictions);
                     files.sort(function(a, b) {
                         if (a.is_folder && b.is_folder) {
                             return a.modified < b.modified ? -1 : 1;
@@ -267,22 +256,21 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         return 0;
                     });
                     files = files.map(function(file) {
-                        return me.make_file_node(file);
+                        return fb.make_file_node(file);
                     });
                 }
                 return { files, has_more };
             });
         };
         fb.search_by_name = frappe.utils.debounce(function() {
-            if (this.search_text === '') {
-                this.node = this.folder_node;
+            if (fb.search_text === '') {
+                fb.node = fb.folder_node;
                 return;
             }
-            if (this.search_text.length < 3) return;
-            var me = this;
+            if (fb.search_text.length < 3) return;
             frappe.call(
                 'frappe_better_attach_control.api.get_files_by_search_text',
-                {text: this.search_text}
+                {text: fb.search_text}
             ).then(function(r) {
                 let files = r.message || [];
                 if (!isEmpty(files)) {
@@ -292,15 +280,15 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         if (f.size == null) f.size = 0;
                         return f;
                     });
-                    files = files.filter(me.check_restrictions);
+                    files = files.filter(fb.check_restrictions);
                     if (!isEmpty(files)) {
                         files = files.map(function(file) {
-                            return me.make_file_node(file);
+                            return fb.make_file_node(file);
                         });
                     }
                 }
-                if (!me.folder_node) me.folder_node = me.node;
-                me.node = {
+                if (!fb.folder_node) fb.folder_node = fb.node;
+                fb.node = {
                     label: __('Search Results'),
                     value: '',
                     children: files,

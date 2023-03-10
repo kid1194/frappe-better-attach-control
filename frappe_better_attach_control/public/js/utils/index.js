@@ -136,15 +136,6 @@ export function toArray(v, def) {
     }
     return [v];
 }
-export function flattenArray(v, t) {
-    if (!isArray(v)) return [];
-    t = t || [];
-    each(v, function(a) {
-        if (isArray(a)) flattenArray(a, t);
-        else t.push(a);
-    });
-    return t;
-}
 
 // Function
 function fnCall(f, a, b) {

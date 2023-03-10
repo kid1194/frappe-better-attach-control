@@ -126,18 +126,6 @@
     }
     return [v];
   }
-  function flattenArray(v, t) {
-    if (!isArray(v))
-      return [];
-    t = t || [];
-    each(v, function(a) {
-      if (isArray(a))
-        flattenArray(a, t);
-      else
-        t.push(a);
-    });
-    return t;
-  }
   function fnCall(f, a, b) {
     if (isFunction(f))
       return f.apply(b, toArray(a));
@@ -153,15 +141,6 @@
       t = v / Math.pow(k, i);
     }
     return flt(t, 2, "#,###.##") + " " + FILE_SIZES[i];
-  }
-  function log() {
-    var pre = "[Better Attach]: ";
-    each(arguments, function(v) {
-      if (isString(v))
-        console.log(pre + v);
-      else
-        console.log(pre, v);
-    });
   }
   function elog() {
     var pre = "[Better Attach]: ";
@@ -1461,18 +1440,15 @@
           up.add_files(e.dataTransfer.files);
       };
       up.check_restrictions = function(file) {
-        log("Checking upload restrictions");
         let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
         if (!isEmpty(allowed_file_types)) {
           is_correct_type = allowed_file_types.some(function(type) {
-            if (type.includes("/")) {
-              if (!file.type)
-                return false;
-              return file.type.match(type);
-            }
-            if (type[0] === ".") {
+            if (isRegExp(type))
+              return file.type && type.test(file.type);
+            if (type.includes("/"))
+              return file.type && file.type === type;
+            if (type[0] === ".")
               return (file.name || file.file_name).endsWith(type);
-            }
             return false;
           });
         }
@@ -1510,7 +1486,6 @@
         return is_correct_type && valid_file_size && valid_filename;
       };
       up.prepare_files = function(file_array) {
-        log("Preparing uploaded file");
         let is_single = isPlainObject(file_array), files = is_single ? [file_array] : Array.from(file_array);
         files = files.map(function(f) {
           if (f.name == null)
@@ -1546,7 +1521,6 @@
         return !is_single ? files : files[0];
       };
       up.add_files = function(file_array) {
-        log("Adding uploaded file");
         let files = up.prepare_files(file_array), max_number_of_files = up.restrictions.max_number_of_files;
         if (max_number_of_files) {
           let uploaded = (up.files || []).length, total = uploaded + files.length;
@@ -1558,7 +1532,6 @@
             files = files.slice(0, max_number_of_files);
           }
         }
-        log("Adding uploaded file to files list");
         up.files = up.files.concat(files);
         if (up.files.length === 1 && !up.allow_multiple && up.restrictions.crop_image_aspect_ratio != null && up.files[0].is_image && !up.files[0].file_obj.type.includes("svg")) {
           up.toggle_image_cropper(0);
@@ -1593,20 +1566,17 @@
       fb._is_better = 1;
       fb._restrictions = opts;
       fb.check_restrictions = function(file) {
-        log("Checking upload restrictions");
         if (file.is_folder)
           return true;
         let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
         if (!isEmpty(allowed_file_types)) {
           is_correct_type = allowed_file_types.some(function(type) {
-            if (type.includes("/")) {
-              if (!file.type)
-                return false;
-              return file.type.match(type);
-            }
-            if (type[0] === ".") {
+            if (isRegExp(type))
+              return file.type && type.test(file.type);
+            if (type.includes("/"))
+              return file.type && file.type === type;
+            if (type[0] === ".")
               return (file.name || file.file_name).endsWith(type);
-            }
             return false;
           });
         }
@@ -1644,7 +1614,6 @@
         return is_correct_type && valid_file_size && valid_filename;
       };
       fb.get_files_in_folder = function(folder, start) {
-        log("Getting folder files", folder);
         return frappe.call(
           "frappe_better_attach_control.api.get_files_in_folder",
           {
@@ -1689,7 +1658,6 @@
         }
         if (fb.search_text.length < 3)
           return;
-        log("Searching files by name");
         frappe.call(
           "frappe_better_attach_control.api.get_files_by_search_text",
           { text: fb.search_text }
@@ -1821,22 +1789,17 @@
         this.df.options = this._df_options;
     }
     set_value(value, force_set_value = false) {
-      if (this._prevent_input) {
-        log("Setting value is prevented");
+      if (this._prevent_input)
         return Promise.resolve();
-      }
       value = this._set_value(value);
       if (!this.frm)
         this._updating_input = true;
       return super.set_value(value, force_set_value);
     }
     set_input(value, dataurl) {
-      if (this._prevent_input) {
-        log("Setting input is prevented");
+      if (this._prevent_input)
         return;
-      }
       if (this._updating_input) {
-        log("Updating input only");
         this._updating_input = false;
         if (this._value.length)
           this._update_input();
@@ -1844,8 +1807,6 @@
       }
       var me = this;
       if (value === null) {
-        log("Clearing uploads");
-        log("Resetting input");
         if (this._value.length) {
           this._remove_files(this._value, function(ret) {
             if (!cint(ret))
@@ -1857,16 +1818,12 @@
           this._reset_value();
         return;
       }
-      if (isEmpty(value)) {
-        log("Input value is empty");
+      if (isEmpty(value))
         return;
-      }
       let val = toArray(value, null);
       if (isArray(val)) {
         if (!val.length)
           return;
-        log("Setting input value array");
-        val = flattenArray(val);
         let update = 0;
         if (!this._allow_multiple) {
           value = val[0];
@@ -1888,18 +1845,14 @@
       }
       if (!isString(value))
         return;
-      log("Setting input value");
       this.value = this._set_value(value);
       this._update_input(value, dataurl);
     }
     async on_upload_complete(attachment) {
-      log("Upload completed");
       if (this.frm) {
-        log("Updating form");
         await this.parse_validate_and_set_in_model(attachment.file_url);
         this.frm.attachments.update_attachment(attachment);
         if (this._allow_multiple) {
-          log("Updating form with multiple uploads");
           let up = this.file_uploader && this.file_uploader.uploader;
           if (up && up.files && up.files.every(function(file) {
             return !file.failed && file.request_succeeded;
@@ -1907,7 +1860,6 @@
             this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
           }
         } else {
-          log("Updating form with single upload");
           this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
         }
       }
@@ -2030,6 +1982,25 @@
           tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
         }
       );
+      if (!isEmpty(tmp.options.restrictions.allowed_file_types)) {
+        var types = [];
+        each(tmp.options.restrictions.allowed_file_types, function(t) {
+          if (isRegExp(t))
+            types.push(t);
+          else if (isString(t)) {
+            if (t[0] === ".")
+              types.push(t);
+            else if (t.includes("/")) {
+              if (t.includes("*")) {
+                t = t.replace("*", "(.*?)");
+                types.push(new RegExp(t));
+              } else
+                types.push(t);
+            }
+          }
+        });
+        tmp.options.restrictions.allowed_file_types = types;
+      }
       if (tmp.options.dialog_title == null)
         delete tmp.options.dialog_title;
       return tmp;
