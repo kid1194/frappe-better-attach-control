@@ -7,7 +7,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 ---
 
 ### Status
-- **Desk**: 🔴 Working
+- **Desk**: 🔵 Testing
 - **Web Form**: 🔵 Testing
 
 ---
@@ -193,7 +193,7 @@ If you find bug in the plugin, please create a [bug report](https://github.com/k
 ### Contributors
 **The list of people who deserves more than a simple thank you.**
 - [CA. B.C.Chechani](https://github.com/chechani) ✌ (v1 Testing & Debugging)
-- [MohsinAli](https://github.com/mohsinalimat) ❤ (v2 Testing & Debugging)
+- [MohsinAli](https://github.com/mohsinalimat) ❤❤❤ (v2 Testing & Debugging)
 - [Robert C](https://github.com/robert1112) 👍 (v2 Testing & Debugging)
 
 ---
