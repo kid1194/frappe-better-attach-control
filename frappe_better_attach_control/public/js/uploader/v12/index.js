@@ -52,7 +52,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			    up.add_files(e.dataTransfer.files);
 		};
         up.check_restrictions = function(file) {
-            let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions,
+            var { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
@@ -115,7 +115,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             });
         };
         up.prepare_files = function(file_array) {
-            let is_single = isPlainObject(file_array),
+            var is_single = isPlainObject(file_array),
             files = is_single ? [file_array] : Array.from(file_array);
             files = files.map(function(f) {
                 if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
@@ -126,7 +126,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             files = files.filter(up.check_restrictions);
             if (isEmpty(files)) return !is_single ? [] : null;
             files = files.map(function(file) {
-                let is_image =  file.type.startsWith('image');
+                var is_image =  file.type.startsWith('image');
                 return {
                     file_obj: file,
                     is_image,
@@ -142,7 +142,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             return !is_single ? files : files[0];
         };
         up.add_files = function(file_array) {
-            let files = up.prepare_files(file_array),
+            var files = up.prepare_files(file_array),
             max_number_of_files = up.restrictions.max_number_of_files;
             if (max_number_of_files) {
                 var uploaded = (up.files || []).length,
@@ -158,13 +158,13 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             up.files = up.files.concat(files);
         };
         up.upload_via_web_link = function() {
-            let file_url = up.$refs.web_link.url;
+            var file_url = up.$refs.web_link.url;
             if (!file_url) {
                 error('Invalid URL');
                 return Promise.reject();
             }
             file_url = decodeURI(file_url);
-            let file = up.prepare_files({file_url});
+            var file = up.prepare_files({file_url});
             return file ? up.upload_file(file) : Promise.reject();
         };
     }
@@ -173,7 +173,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-            let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions,
+            var { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
@@ -223,7 +223,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 'frappe_better_attach_control.api.get_files_in_folder',
                 {folder}
             ).then(function(r) {
-                let files = r.message || [];
+                var files = r.message || [];
                 if (!isEmpty(files)) {
                     files = files.map(function(f) {
                         if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
@@ -241,7 +241,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                         return 0;
                     });
                     files = files.map(function(file) {
-                        let filename = file.file_name || file.name;
+                        var filename = file.file_name || file.name;
                         return {
                             label: frappe.utils.file_name_ellipsis(filename, 40),
                             filename: filename,
