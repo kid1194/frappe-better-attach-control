@@ -158,11 +158,11 @@ bench restart
 | `disable_file_browser` 🔴 | Disable file browser uploads.<br/><br/>- Default: `false` |
 | `allow_multiple` | Allow multiple uploads.<br/><br/>⚠️ *(Field value is a JSON array of files url)*<br/>- Default: `false` |
 | `max_file_size` | Maximum file size (in bytes) that is allowed to be uploaded.<br/><br/>- Example: `2048` for `2KB`<br/>- Default: `Value of maximum file size in Frappe's settings` |
-| `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped regex types with **$**.<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
+| `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
 | `max_number_of_files` | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br/><br/>⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br/>- Example: `4`<br/>- Default: `Value of maximum attachments set for the doctype` |
 | `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
 | `as_public` | Force uploads to be saved in public folder by default.<br/><br/>- Default: `false` |
-| `allowed_filename` 🔴 | Only allow files that match a specific file name to be uploaded.<br/><br/>- Example: (String)`"picture.png"` or (RegExp String)`"/picture\-([0-9]+)\.png/"` or (RegExp)`/picture\-([0-9]+)\.png/`<br/>- Default: `null` |
+| `allowed_filename` 🔴 | Only allow files that match a specific file name to be uploaded.<br/><br/>- Example: (String)`"picture.png"` or (RegExp String)`"/picture\-([0-9]+)\.png/"`<br/>- Default: `null` |
 | `allow_reload` | Allow reloading attachments (✴️Frappe >= v13.0.0).<br>ℹ️ Affect the visibility of the reload button.ℹ️<br/><br/>- Default: `true` |
 | `allow_remove` | Allow removing and clearing attachments.<br>ℹ️ Affect the visibility of the remove and clear buttons.ℹ️<br/><br/>- Default: `true` |
 
