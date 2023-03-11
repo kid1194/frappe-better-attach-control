@@ -43,6 +43,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     allowed_file_types: [],
                     crop_image_aspect_ratio: null,
                     allowed_filename: null,
+                    parsed_allowed_file_types: [],
                 }
             );
         });
@@ -53,12 +54,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			    up.add_files(e.dataTransfer.files);
 		};
         up.check_restrictions = function(file) {
-            let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions,
+            let { max_file_size, parsed_allowed_file_types = [], allowed_filename } = up.restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(allowed_file_types)) {
-                is_correct_type = allowed_file_types.some(function(type) {
+            if (!isEmpty(parsed_allowed_file_types)) {
+                is_correct_type = parsed_allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
@@ -184,12 +185,12 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb._restrictions = opts;
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-            let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions,
+            let { max_file_size, parsed_allowed_file_types = [], allowed_filename } = fb._restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(allowed_file_types)) {
-                is_correct_type = allowed_file_types.some(function(type) {
+            if (!isEmpty(parsed_allowed_file_types)) {
+                is_correct_type = parsed_allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);

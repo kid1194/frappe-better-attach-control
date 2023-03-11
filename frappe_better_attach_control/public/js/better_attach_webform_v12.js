@@ -1427,7 +1427,8 @@
             max_file_size: null,
             max_number_of_files: null,
             allowed_file_types: [],
-            allowed_filename: null
+            allowed_filename: null,
+            parsed_allowed_file_types: []
           }
         );
       });
@@ -1439,9 +1440,9 @@
           up.add_files(e.dataTransfer.files);
       };
       up.check_restrictions = function(file) {
-        let { max_file_size, allowed_file_types = [], allowed_filename } = up.restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
-        if (!isEmpty(allowed_file_types)) {
-          is_correct_type = allowed_file_types.some(function(type) {
+        var { max_file_size, parsed_allowed_file_types = [], allowed_filename } = up.restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
+        if (!isEmpty(parsed_allowed_file_types)) {
+          is_correct_type = parsed_allowed_file_types.some(function(type) {
             if (isRegExp(type))
               return file.type && type.test(file.type);
             if (type.includes("/"))
@@ -1506,7 +1507,7 @@
         });
       };
       up.prepare_files = function(file_array) {
-        let is_single = isPlainObject(file_array), files = is_single ? [file_array] : Array.from(file_array);
+        var is_single = isPlainObject(file_array), files = is_single ? [file_array] : Array.from(file_array);
         files = files.map(function(f) {
           if (f.name == null)
             f.name = f.file_name || get_filename(f.file_url);
@@ -1520,7 +1521,7 @@
         if (isEmpty(files))
           return !is_single ? [] : null;
         files = files.map(function(file) {
-          let is_image2 = file.type.startsWith("image");
+          var is_image2 = file.type.startsWith("image");
           return {
             file_obj: file,
             is_image: is_image2,
@@ -1536,7 +1537,7 @@
         return !is_single ? files : files[0];
       };
       up.add_files = function(file_array) {
-        let files = up.prepare_files(file_array), max_number_of_files = up.restrictions.max_number_of_files;
+        var files = up.prepare_files(file_array), max_number_of_files = up.restrictions.max_number_of_files;
         if (max_number_of_files) {
           var uploaded = (up.files || []).length, total = uploaded + files.length;
           if (total > max_number_of_files) {
@@ -1550,13 +1551,13 @@
         up.files = up.files.concat(files);
       };
       up.upload_via_web_link = function() {
-        let file_url = up.$refs.web_link.url;
+        var file_url = up.$refs.web_link.url;
         if (!file_url) {
           error("Invalid URL");
           return Promise.reject();
         }
         file_url = decodeURI(file_url);
-        let file = up.prepare_files({ file_url });
+        var file = up.prepare_files({ file_url });
         return file ? up.upload_file(file) : Promise.reject();
       };
     }
@@ -1566,9 +1567,9 @@
       fb.check_restrictions = function(file) {
         if (file.is_folder)
           return true;
-        let { max_file_size, allowed_file_types = [], allowed_filename } = fb._restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
-        if (!isEmpty(allowed_file_types)) {
-          is_correct_type = allowed_file_types.some(function(type) {
+        var { max_file_size, parsed_allowed_file_types = [], allowed_filename } = fb._restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
+        if (!isEmpty(parsed_allowed_file_types)) {
+          is_correct_type = parsed_allowed_file_types.some(function(type) {
             if (isRegExp(type))
               return file.type && type.test(file.type);
             if (type.includes("/"))
@@ -1616,7 +1617,7 @@
           "frappe_better_attach_control.api.get_files_in_folder",
           { folder }
         ).then(function(r) {
-          let files = r.message || [];
+          var files = r.message || [];
           if (!isEmpty(files)) {
             files = files.map(function(f) {
               if (f.name == null)
@@ -1639,7 +1640,7 @@
               return 0;
             });
             files = files.map(function(file) {
-              let filename = file.file_name || file.name;
+              var filename = file.file_name || file.name;
               return {
                 label: frappe.utils.file_name_ellipsis(filename, 40),
                 filename,
@@ -1697,7 +1698,7 @@
           return;
         }
         each(me._value, function(v) {
-          let fid = me.frm.attachments.get_file_id_from_file_url(v);
+          var fid = me.frm.attachments.get_file_id_from_file_url(v);
           if (fid)
             me.frm.attachments.remove_fileid(fid);
         });
@@ -1726,7 +1727,7 @@
         this.df.options = this._df_options;
       if (this._images_only) {
         this.upload_options = function(options) {
-          let opts = deepClone(options);
+          var opts = deepClone(options);
           if (isEmpty(opts.restrictions.allowed_file_types)) {
             opts.restrictions.allowed_file_types = ["image/*"];
           } else {
@@ -1734,6 +1735,7 @@
           }
           return opts;
         }(this.upload_options);
+        this._parse_allowed_file_types(this.upload_options);
       }
     },
     set_value: function(value, force_set_value = false) {
@@ -1772,7 +1774,7 @@
       if (isArray(val)) {
         if (!val.length)
           return;
-        let update = 0;
+        var update = 0;
         if (!this._allow_multiple) {
           value = val[0];
           if (!isEmpty(value) && isString(value) && this._value.indexOf(value) < 0) {
@@ -1854,7 +1856,7 @@
     _update_options: function() {
       if ((isEmpty(this.df.better_attach_options) || isPlainObject(this.df.better_attach_options)) && this._latest_options !== this.df.better_attach_options) {
         this._latest_options = this.df.better_attach_options;
-        let opts = !isEmpty(this.df.better_attach_options) && parseJson(this.df.better_attach_options);
+        var opts = !isEmpty(this.df.better_attach_options) && parseJson(this.df.better_attach_options);
         if (isEmpty(opts) && this._options == null)
           return;
         if (isPlainObject(opts))
@@ -1913,26 +1915,23 @@
           tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
         }
       );
-      if (!isEmpty(tmp.options.restrictions.allowed_file_types)) {
-        var types = [];
-        each(tmp.options.restrictions.allowed_file_types, function(t) {
-          if (isRegExp(t))
-            types.push(t);
-          else if (isString(t)) {
-            if (t[0] === ".")
-              types.push(t);
-            else if (t.includes("/")) {
-              if (t.includes("*")) {
-                t = t.replace("*", "(.*?)");
-                types.push(new RegExp(t));
-              } else
-                types.push(t);
-            }
-          }
-        });
-        tmp.options.restrictions.allowed_file_types = types;
-      }
+      this._parse_allowed_file_types(tmp.options);
       return tmp;
+    },
+    _parse_allowed_file_types: function(opts) {
+      var types = [];
+      if (!isEmpty(opts.restrictions.allowed_file_types)) {
+        each(opts.restrictions.allowed_file_types, function(t, i) {
+          if (isRegExp(t)) {
+            opts.restrictions.allowed_file_types.splice(i, 1);
+          } else if (isString(t) && t.includes("/") && t.includes("*")) {
+            t = t.replace("*", "(.*?)");
+            t = new RegExp(t);
+          }
+          types.push(t);
+        });
+      }
+      opts.restrictions.parsed_allowed_file_types = types;
     },
     _reload_control: function(opts) {
       if (this.upload_options)
@@ -2247,12 +2246,12 @@
       this._files_row.on("click", "button.ba-preview", function(e) {
         isObject(e) && e.preventDefault();
         if (!$(this).data("disabled") && !me._is_preview_dialog) {
-          let parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
+          var parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
           if (idx == null)
             idx = parent.attr("data-file-idx");
           if (idx != null) {
             idx = cint(idx);
-            let file = me._files.length > idx ? me._files[idx] : null;
+            var file = me._files.length > idx ? me._files[idx] : null;
             if (file)
               me._dialog_fn._setup_preview(file);
           }
@@ -2261,7 +2260,7 @@
       this._files_row.on("click", "button.ba-remove", function(e) {
         isObject(e) && e.preventDefault();
         if (!$(this).data("disabled") && !me._is_preview_dialog) {
-          let parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
+          var parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
           if (idx == null)
             idx = parent.attr("data-file-idx");
           if (idx != null && me._allow_remove) {
