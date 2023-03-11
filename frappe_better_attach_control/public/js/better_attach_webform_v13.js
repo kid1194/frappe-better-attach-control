@@ -1976,8 +1976,10 @@
         each(opts.restrictions.allowed_file_types, function(t, i) {
           if (isRegExp(t)) {
             opts.restrictions.allowed_file_types.splice(i, 1);
-          } else if (isString(t) && t.includes("/") && t.includes("*")) {
-            t = t.replace("*", "(.*?)");
+          } else if (isString(t) && (t[0] === "$" || t.includes("/*"))) {
+            if (t[0] === "$")
+              t = t.substring(1);
+            t = t.replace("/*", "/(.*?)");
             t = new RegExp(t);
           }
           types.push(t);
