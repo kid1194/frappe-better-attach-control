@@ -173,10 +173,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
 	},
     refresh: function() {
         this._super();
-        if (
-            !isEmpty(this.df.options) && isPlainObject(this.df.options)
-            && this._df_options !== this.df.options
-        ) this._df_options = this.df.options;
+        if (this._df_options !== this.df.options) this._df_options = this.df.options;
         this._update_options();
         this.set_input(toArray(this.value));
     },
@@ -195,8 +192,6 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     // Private Methods
     _setup_control: function() {
         if (this._is_better) return;
-        if (isEmpty(this.df.better_attach_options) && !isEmpty(this.df.options))
-            this.df.better_attach_options = this.df.options;
         this._is_better = 1;
         this._df_options = this.df.options;
         this._options = null;
@@ -204,32 +199,26 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._value = [];
         this._files = [];
         this._allow_multiple = false;
-        this._max_attachments = [];
+        this._max_attachments = {};
         this._allow_remove = true;
         this._display_ready = false;
         this._prevent_input = false;
         this._updating_input = false;
+        $('head').append($('<style>.hidden {display:none}</style>'));
     },
     _update_options: function() {
         if (
-            (
-                isEmpty(this.df.better_attach_options)
-                || isPlainObject(this.df.better_attach_options)
-            )
-            && this._latest_options !== this.df.better_attach_options
-        ) {
-            this._latest_options = this.df.better_attach_options;
-            var opts = !isEmpty(this.df.better_attach_options)
-                && parseJson(this.df.better_attach_options);
-            if (isEmpty(opts) && this._options == null) return;
-            if (isPlainObject(opts)) opts = this._parse_options(opts);
-            else opts = {};
-            this._reload_control(opts);
-            this._options = opts.options || null;
-        }
+            (this._options === null && isEmpty(this.df.better_attach_options))
+            || (this._options !== null && this._latest_options === this.df.better_attach_options)
+        ) return;
+        this._latest_options = this.df.better_attach_options;
+        var opts = !isEmpty(this._latest_options) && parseJson(this._latest_options);
+        opts = !isEmpty(opts) && isPlainObject(opts) ? this._parse_options(opts) : {};
+        this._options = opts.options || null;
+        this._reload_control(opts);
     },
     _parse_options: function(opts) {
-        var tmp = {options: {restrictions: {}}};
+        var tmp = {options: {restrictions: {}, extra: {}}};
         tmp.allow_remove = toBool(ifNull(opts.allow_remove, true));
         function parseVal(v, t) {
             if (isEmpty(v)) v = null;
@@ -262,10 +251,17 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             [
                 ['max_file_size', 'i'], ['allowed_file_types', 'a'],
                 ['max_number_of_files', 'i'], ['as_public', 'b'],
-                ['allowed_filename', 'r'],
             ],
             function(k) {
                 tmp.options.restrictions[k[0]] = parseVal(opts[k[0]], k[1]);
+            }
+        );
+        each(
+            [
+                ['allowed_filename', 'r'],
+            ],
+            function(k) {
+                tmp.options.extra[k[0]] = parseVal(opts[k[0]], k[1]);
             }
         );
         this._parse_allowed_file_types(tmp.options);
@@ -285,7 +281,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 types.push(t);
             });
         }
-        opts.restrictions.parsed_allowed_file_types = types;
+        opts.extra.allowed_file_types = types;
     },
     _reload_control: function(opts) {
         if (this.upload_options) this.upload_options = null;
@@ -295,7 +291,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 else this.disable_remove();
             }
         }
-        var allow_multiple = opts.options && toBool(opts.options.allow_multiple);
+        var allow_multiple = ifNull((this._options || {}).allow_multiple, false);
         if (allow_multiple === this._allow_multiple) return;
         this._allow_multiple = allow_multiple;
         this._set_max_attachments();
@@ -330,22 +326,26 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     },
     _set_max_attachments: function() {
         if (!this.frm) return;
-        if (!this._allow_multiple) {
-            var meta = frappe.get_meta(this.frm.doctype);
-            if (meta) meta.max_attachments = this._max_attachments[0];
-            if (this.frm.meta) this.frm.meta.max_attachments = this._max_attachments[1];
+        var meta = frappe.get_meta(this.frm.doctype);
+        if (
+            !this._allow_multiple || !isPlainObject(this._options)
+            || isEmpty(this._options.restrictions.max_number_of_files)
+        ) {
+            if (meta && this._max_attachments.meta != null)
+                meta.max_attachments = this._max_attachments.meta;
+            if (this.frm.meta && this._max_attachments.fmeta != null)
+                this.frm.meta.max_attachments = this._max_attachments.fmeta;
             return;
         }
-        var val = this._options.restrictions.max_number_of_files,
-        meta = frappe.get_meta(this.frm.doctype);
+        var val = this._options.restrictions.max_number_of_files;
         if (meta && val > cint(meta.max_attachments)) {
-            if (this._max_attachments[0] == null)
-                this._max_attachments[0] = meta.max_attachments;
+            if (this._max_attachments.meta == null)
+                this._max_attachments.meta = meta.max_attachments;
             meta.max_attachments = val;
         }
         if (this.frm.meta && val > cint(this.frm.meta.max_attachments)) {
-            if (this._max_attachments[1] == null)
-                this._max_attachments[1] = this.frm.meta.max_attachments;
+            if (this._max_attachments.fmeta == null)
+                this._max_attachments.fmeta = this.frm.meta.max_attachments;
             this.frm.meta.max_attachments = val;
         }
     },
@@ -520,14 +520,13 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     },
     _setup_dialog: function() {
         if (this._dialog) {
-            if (this._is_preview_dialog) {
-                this._is_preview_dialog = false;
-                this._dialog_fn._reset_preview();
-                this._files_row.children().remove();
-                each(this._files, function(f, i) {
-                    this._add_file_to_dialog(f, i);
-                }, this);
-            }
+            if (!this._is_preview_dialog) return;
+            this._is_preview_dialog = false;
+            this._dialog_fn._reset_preview();
+            this._files_row.children().remove();
+            each(this._files, function(f, i) {
+                this._add_file_to_dialog(f, i);
+            }, this);
             return;
         }
         this._dialog_fn = {};
@@ -540,9 +539,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         container = $('<div class="container-fluid p-1"></div>').appendTo(body);
         this._dialog_title = wrapper.find('.modal-title');
         this._dialog_title.parent().addClass('align-items-center');
-        this._dialog_back = $('<span class="fa fa-chevron-left fa-fw mr-2 hide"></span>').before(this._dialog_title);
+        this._dialog_back = $('<span class="fa fa-chevron-left fa-fw mr-2 hidden"></span>').before(this._dialog_title);
         this._files_row = $('<div class="row"></div>').appendTo(container);
-        this._preview_row = $('<div class="row hide"></div>').appendTo(container);
+        this._preview_row = $('<div class="row hidden"></div>').appendTo(container);
         this._preview_holder = $('<div class="col img_preview d-flex align-items-center justify-content-center"></div>')
             .appendTo(this._preview_row);
         this._file_preview = null;
@@ -576,9 +575,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             }
         };
         this._dialog_fn._preview_toggle = function(show) {
-            me._files_row.toggleClass('hide', show);
-            me._dialog_back.toggleClass('hide', !show);
-            me._preview_row.toggleClass('hide', !show);
+            me._files_row.toggleClass('hidden', show);
+            me._dialog_back.toggleClass('hidden', !show);
+            me._preview_row.toggleClass('hidden', !show);
         };
         this._dialog_fn._reset_preview = function(show) {
             me._dialog_fn._preview_toggle(false);
@@ -626,8 +625,8 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         if (this._is_preview_dialog) return;
         this._is_preview_dialog = true;
         this._setup_dialog();
-        this._files_row.addClass('hide');
-        this._preview_row.removeClass('hide');
+        this._files_row.addClass('hidden');
+        this._preview_row.removeClass('hidden');
     },
     _update_input: function(value, dataurl) {
         value = value || this._value[this._value.length - 1];

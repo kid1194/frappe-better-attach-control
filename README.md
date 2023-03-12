@@ -139,9 +139,9 @@ bench restart
 2. Enter the form type/name (Ex: 'User')
 3. Scroll down to the form fields area
 4. Create an **Attach** or **Attach Image** field or edit an existing custom field
-5. Inside the field's custom property, **Better Attach Options**, add a JSON object of the customizations you want. Example:
+5. Inside the field's custom property, **Better Attach Options**, add a JSON string of the customizations you want. Example:
 ```
-{"allowed_file_types": ["jpg", "png", "gif"]}
+{"allowed_file_types": [".jpg", ".png", ".gif"]}
 ```
 
 ℹ️ **Notes**
@@ -158,7 +158,7 @@ bench restart
 | `disable_file_browser` 🔴 | Disable file browser uploads.<br/><br/>- Default: `false` |
 | `allow_multiple` | Allow multiple uploads.<br/><br/>⚠️ *(Field value is a JSON array of files url)*<br/><br/>- Default: `false` |
 | `max_file_size` | Maximum file size (in bytes) that is allowed to be uploaded.<br/><br/>- Example: `2048` for `2KB`<br/>- Default: `Value of maximum file size in Frappe's settings` |
-| `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br/><br/>⚠️ *(RegExp string types will not be used to in HTML accept attribute)*<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
+| `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br/><br/>⚠️ *(File extensions must have a leading dot ".")*<br/>⚠️ *(RegExp string types will not be used to in HTML accept attribute)*<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
 | `max_number_of_files` | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br/><br/>⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br/><br/>- Example: `4`<br/>- Default: `Value of maximum attachments set for the doctype` |
 | `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
 | `as_public` | Force uploads to be saved in public folder by default.<br/><br/>- Default: `false` |

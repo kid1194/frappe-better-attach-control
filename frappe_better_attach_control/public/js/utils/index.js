@@ -158,6 +158,13 @@ export function formatSize(v) {
 }
 
 // Error
+export function log() {
+    var pre = '[Better Attach]: ';
+    each(arguments, function(v) {
+        if (isString(v)) console.log(pre + v);
+        else console.log(pre, v);
+    });
+}
 function elog() {
     var pre = '[Better Attach]: ';
     each(arguments, function(v) {

@@ -11,6 +11,7 @@ import {
     isPlainObject,
     isEmpty,
     isRegExp,
+    log,
     error
 } from './../utils';
 import {
@@ -22,17 +23,21 @@ import {
 
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
-        super(opts || {});
-        if (this.uploader) this._override_uploader(opts);
-    }
-    _override_uploader(opts) {
-        var up = this.uploader;
-        if (up._is_better) return;
-        up._is_better = 1;
         opts = isPlainObject(opts) ? opts : {};
+        log('FileUploader options', opts);
+        let extra = opts.extra || {};
+        delete opts.extra;
+        super(opts);
+        if (this.uploader) this._override_uploader(opts, extra);
+    }
+    _override_uploader(opts, extra) {
+        var up = this.uploader;
+        up._extra_restrictions = extra;
+        log('Uploader restrictions', up.restrictions);
+        log('Uploader extra restrictions', up._extra_restrictions);
         var me = this;
         up.$watch('show_file_browser', function(show_file_browser) {
-            if (!show_file_browser || !up.$refs.file_browser || up.$refs.file_browser._is_better) return;
+            if (!show_file_browser || !up.$refs.file_browser) return;
             me._override_file_browser(
                 up.$refs.file_browser,
                 !isEmpty(opts.restrictions)
@@ -42,9 +47,8 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                     max_number_of_files: null,
                     allowed_file_types: [],
                     crop_image_aspect_ratio: null,
-                    allowed_filename: null,
-                    parsed_allowed_file_types: [],
-                }
+                },
+                extra
             );
         });
         if (!isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
@@ -54,12 +58,14 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
 			    up.add_files(e.dataTransfer.files);
 		};
         up.check_restrictions = function(file) {
-            let { max_file_size, parsed_allowed_file_types = [], allowed_filename } = up.restrictions,
+            let max_file_size = up.restrictions.max_file_size,
+            { allowed_file_types = [], allowed_filename } = up._extra_restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(parsed_allowed_file_types)) {
-                is_correct_type = parsed_allowed_file_types.some(function(type) {
+            log('Uploader check restrictions', max_file_size, allowed_file_types, allowed_filename);
+            if (!isEmpty(allowed_file_types)) {
+                is_correct_type = allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
@@ -180,17 +186,21 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             }
         };
     }
-    _override_file_browser(fb, opts) {
-        fb._is_better = 1;
+    _override_file_browser(fb, opts, extra) {
         fb._restrictions = opts;
+        fb._extra_restrictions = extra;
+        log('FileBrowser restrictions', fb._restrictions);
+        log('FileBrowser extra restrictions', fb._extra_restrictions);
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
-            let { max_file_size, parsed_allowed_file_types = [], allowed_filename } = fb._restrictions,
+            let max_file_size = fb._restrictions.max_file_size,
+            { allowed_file_types = [], allowed_filename } = fb._extra_restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(parsed_allowed_file_types)) {
-                is_correct_type = parsed_allowed_file_types.some(function(type) {
+            log('FileBrowser check restrictions', max_file_size, allowed_file_types, allowed_filename);
+            if (!isEmpty(allowed_file_types)) {
+                is_correct_type = allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
