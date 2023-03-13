@@ -23,6 +23,7 @@ import {
     toJson,
     formatSize,
     request,
+    log,
     error
 } from './../utils';
 import {
@@ -422,7 +423,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             'class': 'other',
         };
         this._files[idx] = val;
-        if (this.file_uploader) {
+        if (this.file_uploader && this.file_uploader.uploader) {
             each(this.file_uploader.uploader.files, function(f) {
                 if (f.doc && f.doc.file_url === val.file_url) {
                     val.name = f.doc.name;
@@ -624,14 +625,13 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             me._file_preview && me._file_preview.remove();
             me._file_preview = null;
         };
-        this._dialog_back.click(function(e) {
-            isObject(e) && e.preventDefault();
+        this._dialog_back.click(function() {
             if (!me._is_preview_dialog) me._dialog_fn._reset_preview();
         });
         this._files_row.on('click', 'button.ba-preview', function(e) {
-            isObject(e) && e.preventDefault();
-            if (!$(this).data('disabled') && !me._is_preview_dialog) {
-                let parent = $($(this).closest('div.ba-attachment').get(0)),
+            let $el = $(this);
+            if ($el.hasClass('ba-preview') && !$el.data('disabled') && !me._is_preview_dialog) {
+                let parent = $($el.closest('div.ba-attachment').get(0)),
                 idx = parent.data('idx');
                 if (idx == null) idx = parent.attr('data-file-idx');
                 if (idx != null) {
@@ -642,9 +642,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             }
         });
         this._files_row.on('click', 'button.ba-remove', function(e) {
-            isObject(e) && e.preventDefault();
-            if (!$(this).data('disabled') && !me._is_preview_dialog) {
-                let parent = $($(this).closest('div.ba-attachment').get(0)),
+            let $el = $(this);
+            if ($el.hasClass('ba-remove') && !$el.data('disabled') && !me._is_preview_dialog) {
+                let parent = $($el.closest('div.ba-attachment').get(0)),
                 idx = parent.data('idx');
                 if (idx == null) idx = parent.attr('data-file-idx');
                 if (idx != null && me._allow_remove) {
@@ -653,11 +653,19 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 }
             }
         });
-        this.$value.find('a.attached-file-link').on('click', function(e) {
-            isObject(e) && e.preventDefault();
-            if (me._is_preview_dialog) {
-                me._dialog_fn._setup_preview(this._files[0]);
-            } else me._dialog.show();
+        this.$value.find('a.attached-file-link').first().click(function(e) {
+             log('Attach field value clicked');
+            var status;
+            try {
+                if (me._is_preview_dialog) {
+                    me._dialog_fn._setup_preview(this._files[0]);
+                } else me._dialog.show();
+                status = 1;
+            } catch(e) {
+                status = 0;
+                log('Attach field value click error: ' + e.message);
+            }
+            if (status && isObject(e)) e.preventDefault();
         });
     }
     _setup_preview() {

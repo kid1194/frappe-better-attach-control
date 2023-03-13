@@ -1417,7 +1417,6 @@
   frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
       opts = isPlainObject(opts) ? opts : {};
-      log("FileUploader options", opts);
       let extra = opts.extra || {};
       delete opts.extra;
       super(opts);
@@ -1425,11 +1424,8 @@
         this._override_uploader(opts, extra);
     }
     _override_uploader(opts, extra) {
-      var up = this.uploader;
+      var up = this.uploader, me = this;
       up._extra_restrictions = extra;
-      log("Uploader restrictions", up.restrictions);
-      log("Uploader extra restrictions", up._extra_restrictions);
-      var me = this;
       up.$watch("show_file_browser", function(show_file_browser) {
         if (!show_file_browser || !up.$refs.file_browser)
           return;
@@ -1453,7 +1449,6 @@
       };
       up.check_restrictions = function(file) {
         let max_file_size = up.restrictions.max_file_size, { allowed_file_types = [], allowed_filename } = up._extra_restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
-        log("Uploader check restrictions", max_file_size, allowed_file_types, allowed_filename);
         if (!isEmpty(allowed_file_types)) {
           is_correct_type = allowed_file_types.some(function(type) {
             if (isRegExp(type))
@@ -1578,13 +1573,10 @@
     _override_file_browser(fb, opts, extra) {
       fb._restrictions = opts;
       fb._extra_restrictions = extra;
-      log("FileBrowser restrictions", fb._restrictions);
-      log("FileBrowser extra restrictions", fb._extra_restrictions);
       fb.check_restrictions = function(file) {
         if (file.is_folder)
           return true;
         let max_file_size = fb._restrictions.max_file_size, { allowed_file_types = [], allowed_filename } = fb._extra_restrictions, is_correct_type = true, valid_file_size = true, valid_filename = true;
-        log("FileBrowser check restrictions", max_file_size, allowed_file_types, allowed_filename);
         if (!isEmpty(allowed_file_types)) {
           is_correct_type = allowed_file_types.some(function(type) {
             if (isRegExp(type))
@@ -2137,7 +2129,7 @@
         "class": "other"
       };
       this._files[idx] = val;
-      if (this.file_uploader) {
+      if (this.file_uploader && this.file_uploader.uploader) {
         each(this.file_uploader.uploader.files, function(f) {
           if (f.doc && f.doc.file_url === val.file_url) {
             val.name = f.doc.name;
@@ -2335,15 +2327,14 @@
         me._file_preview && me._file_preview.remove();
         me._file_preview = null;
       };
-      this._dialog_back.click(function(e) {
-        isObject(e) && e.preventDefault();
+      this._dialog_back.click(function() {
         if (!me._is_preview_dialog)
           me._dialog_fn._reset_preview();
       });
       this._files_row.on("click", "button.ba-preview", function(e) {
-        isObject(e) && e.preventDefault();
-        if (!$(this).data("disabled") && !me._is_preview_dialog) {
-          let parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
+        let $el = $(this);
+        if ($el.hasClass("ba-preview") && !$el.data("disabled") && !me._is_preview_dialog) {
+          let parent = $($el.closest("div.ba-attachment").get(0)), idx = parent.data("idx");
           if (idx == null)
             idx = parent.attr("data-file-idx");
           if (idx != null) {
@@ -2355,9 +2346,9 @@
         }
       });
       this._files_row.on("click", "button.ba-remove", function(e) {
-        isObject(e) && e.preventDefault();
-        if (!$(this).data("disabled") && !me._is_preview_dialog) {
-          let parent = $($(this).closest("div.ba-attachment").get(0)), idx = parent.data("idx");
+        let $el = $(this);
+        if ($el.hasClass("ba-remove") && !$el.data("disabled") && !me._is_preview_dialog) {
+          let parent = $($el.closest("div.ba-attachment").get(0)), idx = parent.data("idx");
           if (idx == null)
             idx = parent.attr("data-file-idx");
           if (idx != null && me._allow_remove) {
@@ -2366,12 +2357,21 @@
           }
         }
       });
-      this.$value.find("a.attached-file-link").on("click", function(e) {
-        isObject(e) && e.preventDefault();
-        if (me._is_preview_dialog) {
-          me._dialog_fn._setup_preview(this._files[0]);
-        } else
-          me._dialog.show();
+      this.$value.find("a.attached-file-link").first().click(function(e) {
+        log("Attach field value clicked");
+        var status;
+        try {
+          if (me._is_preview_dialog) {
+            me._dialog_fn._setup_preview(this._files[0]);
+          } else
+            me._dialog.show();
+          status = 1;
+        } catch (e2) {
+          status = 0;
+          log("Attach field value click error: " + e2.message);
+        }
+        if (status && isObject(e))
+          e.preventDefault();
       });
     }
     _setup_preview() {
