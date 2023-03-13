@@ -661,9 +661,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                     me._dialog_fn._setup_preview(this._files[0]);
                 } else me._dialog.show();
                 status = 1;
-            } catch(e) {
+            } catch(e2) {
                 status = 0;
-                log('Attach field value click error: ' + e.message);
+                log('Attach field value click error: ' + e2.message);
             }
             if (status && isObject(e)) e.preventDefault();
         });
