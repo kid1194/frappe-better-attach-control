@@ -6,6 +6,9 @@
 */
 
 
+.ba-hidden {
+    display: none;
+}
 .ba-link, .ba-link:hover {
     text-decoration: none;
 }

@@ -69,11 +69,13 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 error('Unable to clear the uploaded attachments.');
                 return;
             }
-            each(me._value, function(v) {
-                let fid = me.frm.attachments.get_file_id_from_file_url(v);
-                if (fid) me.frm.attachments.remove_fileid(fid);
-            });
-            me.frm.sidebar.reload_docinfo();
+            if (me.frm.attachments) {
+                each(me._value, function(v) {
+                    let fid = me.frm.attachments.get_file_id_from_file_url(v);
+                    if (fid) me.frm.attachments.remove_fileid(fid);
+                });
+            }
+            me.frm.sidebar && me.frm.sidebar.reload_docinfo();
             me.parse_validate_and_set_in_model(null)
             .then(function() {
                 // To allow changing value from within set_input function
@@ -176,7 +178,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     async on_upload_complete(attachment) {
 		if (this.frm) {
 			await this.parse_validate_and_set_in_model(attachment.file_url);
-			this.frm.attachments.update_attachment(attachment);
+			this.frm.attachments && this.frm.attachments.update_attachment(attachment);
 			if (this._allow_multiple) {
                 let up = this.file_uploader && this.file_uploader.uploader;
                 if (up && up.files && up.files.every(function(file) { return !file.failed && file.request_succeeded; })) {
@@ -219,6 +221,12 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     show_files() {
         this._dialog && this._dialog.show();
     }
+    set_options(opts) {
+        if (isPlainObject(opts)) {
+            this.df.better_attach_options = opts;
+            this._update_options();
+        }
+    }
     // Private Methods
     _setup_control() {
         if (this._is_better) return;
@@ -235,7 +243,6 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._display_ready = false;
         this._prevent_input = false;
         this._updating_input = false;
-        $('head').append($('<style>.hidden {display:none}</style>'));
     }
     _update_options() {
         if (
@@ -389,6 +396,11 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         }
     }
     _setup_display() {
+        // Check if field in grid row or not
+        if (this.layout && this.layout.grid_row) {
+            log('Field is in a grid row');
+            return;
+        }
         this._display_ready = true;
         if (this._allow_multiple) {
             this._setup_dialog();
@@ -412,6 +424,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         });
     }
     _add_file(value, idx) {
+        // Check if there is a dialog or not
+        if (!this._dialog) return;
         var val = {
             name: null,
             file_name: get_filename(value),
@@ -467,6 +481,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         } else this._add_file_to_dialog(val, idx);
     }
     _add_file_to_dialog(file, idx) {
+        // Check if there is a dialog or not
+        if (!this._dialog) return;
         let meta = [];
         if (file.size && file.size_str) meta.push(__('Size') + ': ' + file.size_str);
         if (file.type) meta.push(__('Type') + ': ' + file.type);
@@ -526,10 +542,10 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         if (!this._allow_multiple || (len - 1) < idx) return;
         let url = this._value[idx];
         this._value.splice(idx, 1);
-        this._files.splice(idx, 1);
+        this._dialog && this._files.splice(idx, 1);
         len--;
         this.value = len ? toJson(this._value) : null;
-        this._files_row && this._files_row.find('div[data-file-idx="' + idx + '"]').remove();
+        this._dialog && this._files_row.find('div[data-file-idx="' + idx + '"]').remove();
         this._remove_file_by_url(url);
     }
     _remove_file_by_url(url) {
@@ -554,7 +570,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     _toggle_remove_button() {
         let show = this._allow_remove;
         this.$value && this.$value.find('[data-action="clear_attachment"]').toggle(show);
-        this._files_row && this._files_row.find('div.ba-remove')
+        this._dialog && this._files_row.find('div.ba-remove')
             .toggleClass('disabled', !show).data('disabled', show ? 0 : 1);
     }
     _setup_dialog() {
@@ -578,10 +594,10 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         container = $('<div class="container-fluid p-1"></div>').appendTo(body);
         this._dialog_title = wrapper.find('.modal-title');
         this._dialog_title.parent().addClass('align-items-center');
-        this._dialog_back = $('<span class="fa fa-chevron-left fa-fw mr-2 hidden"></span>');
+        this._dialog_back = $('<span class="fa fa-chevron-left fa-fw mr-2 ba-hidden"></span>');
         this._dialog_title.before(this._dialog_back);
         this._files_row = $('<div class="row"></div>').appendTo(container);
-        this._preview_row = $('<div class="row hidden"></div>').appendTo(container);
+        this._preview_row = $('<div class="row ba-hidden"></div>').appendTo(container);
         this._preview_holder = $('<div class="col img_preview d-flex align-items-center justify-content-center"></div>')
             .appendTo(this._preview_row);
         this._file_preview = null;
@@ -615,9 +631,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             }
         };
         this._dialog_fn._preview_toggle = function(show) {
-            me._files_row.toggleClass('hidden', show);
-            me._dialog_back.toggleClass('hidden', !show);
-            me._preview_row.toggleClass('hidden', !show);
+            me._files_row.toggleClass('ba-hidden', show);
+            me._dialog_back.toggleClass('ba-hidden', !show);
+            me._preview_row.toggleClass('ba-hidden', !show);
         };
         this._dialog_fn._reset_preview = function(show) {
             me._dialog_fn._preview_toggle(false);
@@ -672,8 +688,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         if (this._is_preview_dialog) return;
         this._is_preview_dialog = true;
         this._setup_dialog();
-        this._files_row.addClass('hidden');
-        this._preview_row.removeClass('hidden');
+        this._files_row.addClass('ba-hidden');
+        this._preview_row.removeClass('ba-hidden');
     }
     _update_input(value, dataurl) {
         value = value || this._value[this._value.length - 1];
@@ -707,8 +723,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this.$input.toggle(true);
         this.$value.toggle(false);
         clear(this._value);
-        clear(this._files);
          if (this._dialog) {
+             clear(this._files);
             if (this._is_preview_dialog) {
                 this._is_preview_dialog = false;
                 this._dialog_fn._reset_preview();

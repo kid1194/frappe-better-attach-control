@@ -12,6 +12,16 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ---
 
+### Special Thanks 
+**A simple display of gratitude and appreciation to those who provided helped and kind support.**
+#### Version 2
+- [MohsinAli](https://github.com/mohsinalimat) (Testing - Debugging - Bug Fixing)
+- [Robert C](https://github.com/robert1112) (Testing - Debugging)
+#### Version 1
+- [CA. B.C.Chechani](https://github.com/chechani) (Testing - Debugging)
+
+---
+
 ### Table of Contents
 - [Requirements](#requirements)
 - [Setup](#setup)
@@ -23,7 +33,6 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 - [Available JavaScript Methods](#available-javascript-methods)
 - [Supported Fields](#supported-fields)
 - [Issues](#issues)
-- [Contributors](#contributors)
 - [License](#license)
 
 ---
@@ -35,9 +44,7 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ### Setup
 
-⚠️ *Important* ⚠️
-
-*Do not forget to replace [sitename] with the name of your site in all commands.*
+⚠️ *Do not forget to replace [sitename] with the name of your site in all commands.* ⚠️
 
 #### Install
 1. Go to bench directory
@@ -139,14 +146,13 @@ bench restart
 2. Enter the form type/name (Ex: 'User')
 3. Scroll down to the form fields area
 4. Create an **Attach** or **Attach Image** field or edit an existing custom field
-5. Inside the field's custom property, **Better Attach Options**, add a JSON string of the customizations you want. Example:
-```
-{"allowed_file_types": [".jpg", ".png", ".gif"]}
-```
+5. Inside the field's custom property, **Better Attach Options**, add a JSON string of the options you want.
 
-ℹ️ **Notes**
-1. **You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.**
-2. **The plugin creates a custom field property called Better Attach Options to protect the plugin customizations from any modification and to make the plugin work in web forms.**
+    Ex: `{"allowed_file_types": [".jpg", ".png", ".gif"]}`
+
+##### Remember
+1. You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.
+2. Use the custom field property called **Better Attach Options**, that appears for **Attach** & **Attach Image** fields, instead of the default **Options** field property.
 
 ---
 
@@ -176,6 +182,7 @@ bench restart
 | `enable_remove()` | Allow removing and clearing attachments and show the clear and remove buttons. |
 | `disable_remove()` | Deny removing and clearing attachments and hide the clear and remove buttons. |
 | `show_files()` | Show the list of uploaded files in a dialog (Only when multiple files is allowed). |
+| `set_options(JSON)` | Set or change the plugin current options.  |
 
 ---
 
@@ -187,14 +194,6 @@ bench restart
 
 ### Issues
 If you find bug in the plugin, please create a [bug report](https://github.com/kid1194/frappe-better-attach-control/issues/new?assignees=kid1194&labels=bug&template=bug_report.md&title=%5BBUG%5D) and let us know about it.
-
----
-
-### Contributors
-**The list of people who deserves more than a simple thank you.**
-- [CA. B.C.Chechani](https://github.com/chechani) ✌ (v1 Testing & Debugging)
-- [MohsinAli](https://github.com/mohsinalimat) ❤❤❤ (v2 Testing & Debugging)
-- [Robert C](https://github.com/robert1112) 👍 (v2 Testing & Debugging)
 
 ---
 
