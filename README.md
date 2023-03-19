@@ -4,6 +4,10 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ⚠️ **v2 is still in BETA stage** ⚠️
 
+---
+
+**If you would like to buy me a cup of coffee 😎**
+
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZWZ4TK5PG7G8W)
 
 ---
@@ -168,7 +172,7 @@ bench restart
 | `max_file_size` | Maximum file size (in bytes) that is allowed to be uploaded.<br/><br/>- Example: `2048` for `2KB`<br/>- Default: `Value of maximum file size in Frappe's settings` |
 | `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br/><br/>⚠️ *(File extensions must have a leading dot ".")*<br/>⚠️ *(RegExp string types will not be used to in HTML accept attribute)*<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
 | `max_number_of_files` | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br/><br/>⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br/><br/>- Example: `4`<br/>- Default: `Value of maximum attachments set for the doctype` |
-| `crop_image_aspect_ratio` | Crop aspect ratio for images (Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
+| `crop_image_aspect_ratio` | Crop aspect ratio for images (✴️Frappe >= v14.0.0).<br/><br/>- Example: `1` or `16/9` or `4/3`<br/>- Default: `null` |
 | `as_public` | Force uploads to be saved in public folder by default.<br/><br/>- Default: `false` |
 | `allowed_filename` 🔴 | Only allow files that match a specific file name to be uploaded.<br/><br/>- Example: (String)`"picture.png"` or (RegExp String)`"/picture\-([0-9]+)\.png/"`<br/>- Default: `null` |
 | `allow_reload` | Allow reloading attachments (✴️Frappe >= v13.0.0).<br/><br/>ℹ️ Affect the visibility of the reload button.ℹ️<br/><br/>- Default: `true` |
