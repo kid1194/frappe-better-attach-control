@@ -9,6 +9,15 @@
 .ba-hidden {
     display: none;
 }
+.ba-dialog-back {
+    display: inline-block;
+    margin-right: 1.5rem !important;
+}
+html[dir="rtl"] .ba-dialog-back {
+    margin-left: 1.5rem !important;
+    margin-right: 0;
+    transform: rotate(180deg);
+}
 .ba-link, .ba-link:hover {
     text-decoration: none;
 }

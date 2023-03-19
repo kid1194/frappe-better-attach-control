@@ -1402,10 +1402,8 @@
       d = d.toLowerCase();
       if (d[0] === ".")
         d = d.substring(1, d.length);
-      if (is_image(d) && ret.indexOf(d) < 0) {
+      if (is_image(d) && ret.indexOf(d) < 0)
         ret.push(d);
-        ret.push(get_type(d));
-      }
     });
     return ret;
   }
@@ -1879,7 +1877,7 @@
     toggle_reload_button() {
       if (!this.$value)
         return;
-      let show = this._allow_reload && this.file_uploader && this.file_uploader.uploader.files.length > 0;
+      let show = this._allow_reload && this.file_uploader && this.file_uploader.uploader.files && this.file_uploader.uploader.files.length > 0;
       this.$value.find('[data-action="reload_attachment"]').toggle(show);
     }
     refresh() {
@@ -1906,7 +1904,7 @@
       this._toggle_remove_button();
     }
     show_files() {
-      this._dialog && this._dialog.show();
+      this._dialog && this._dialog_fn && this._dialog_fn.show();
     }
     set_options(opts) {
       if (isPlainObject(opts)) {
@@ -2103,7 +2101,6 @@
     _setup_display() {
       if (this.layout && this.layout.grid_row) {
         log("Field is in a grid row");
-        return;
       }
       this._display_ready = true;
       if (this._allow_multiple) {
@@ -2143,7 +2140,7 @@
       };
       this._files[idx] = val;
       if (this.file_uploader && this.file_uploader.uploader) {
-        each(this.file_uploader.uploader.files, function(f) {
+        each(this.file_uploader.uploader.files || [], function(f) {
           if (f.doc && f.doc.file_url === val.file_url) {
             val.name = f.doc.name;
             if (f.file_obj) {
@@ -2293,20 +2290,21 @@
         return;
       }
       this._dialog_fn = {};
-      this._dialog = new frappe.ui.Dialog({
-        title: __(this.df.label),
-        indicator: "blue"
-      });
-      let wrapper = this._dialog.$wrapper.addClass("modal-dialog-scrollable"), body = wrapper.find(".modal-body"), container = $('<div class="container-fluid p-1"></div>').appendTo(body);
-      this._dialog_title = wrapper.find(".modal-title");
+      this._dialog = frappe.get_modal(__(this.df.label), "");
+      this._dialog.addClass("modal-dialog-scrollable");
+      let wrapper = this._dialog.find(".modal-dialog").get(0), body = wrapper.find(".modal-body"), container = $('<div class="container-fluid p-1"></div>').appendTo(body);
+      this._dialog_title = wrapper.find(".modal-title").get(0);
       this._dialog_title.parent().addClass("align-items-center");
-      this._dialog_back = $('<span class="fa fa-chevron-left fa-fw mr-2 ba-hidden"></span>');
-      this._dialog_title.before(this._dialog_back);
+      this._dialog_back = $('<span class="fa fa-chevron-left fa-fw ba-dialog-back ba-hidden"></span>');
+      this._dialog_back.prependTo(this._dialog_title.parent());
       this._files_row = $('<div class="row"></div>').appendTo(container);
       this._preview_row = $('<div class="row ba-hidden"></div>').appendTo(container);
       this._preview_holder = $('<div class="col img_preview d-flex align-items-center justify-content-center"></div>').appendTo(this._preview_row);
       this._file_preview = null;
       var me = this;
+      this._dialog_fn.show = function() {
+        me._dialog.addClass("fade").modal("show");
+      };
       this._dialog_fn._setup_preview = function(file) {
         if (file.class === "image") {
           me._file_preview = $(`<img>`).addClass("img-responsive").attr("src", file.file_url).attr("alt", file.file_name).appendTo(me._preview_holder);
@@ -2326,7 +2324,7 @@
           if (!me._is_preview_dialog) {
             me._dialog_fn._preview_toggle(true);
           } else
-            me._dialog.show();
+            me._dialog_fn.show();
         } else {
           window.open(file.file_url, "_blank");
         }
@@ -2346,7 +2344,7 @@
         if (!me._is_preview_dialog)
           me._dialog_fn._reset_preview();
       });
-      this._files_row.on("click", "button.ba-preview", function(e) {
+      this._files_row.on("click", "button.ba-preview", function() {
         let $el = $(this);
         if ($el.hasClass("ba-preview") && !$el.data("disabled") && !me._is_preview_dialog) {
           let parent = $($el.closest("div.ba-attachment").get(0)), idx = parent.data("idx");
@@ -2360,7 +2358,7 @@
           }
         }
       });
-      this._files_row.on("click", "button.ba-remove", function(e) {
+      this._files_row.on("click", "button.ba-remove", function() {
         let $el = $(this);
         if ($el.hasClass("ba-remove") && !$el.data("disabled") && !me._is_preview_dialog) {
           let parent = $($el.closest("div.ba-attachment").get(0)), idx = parent.data("idx");
@@ -2372,14 +2370,14 @@
           }
         }
       });
-      this.$value.find("a.attached-file-link").first().click(function(e) {
+      this.$value.find("a.attached-file-link").get(0).click(function(e) {
         log("Attach field value clicked");
         var status;
         try {
           if (me._is_preview_dialog) {
-            me._dialog_fn._setup_preview(this._files[0]);
+            me._dialog_fn._setup_preview(me._files[0]);
           } else
-            me._dialog.show();
+            me._dialog_fn.show();
           status = 1;
         } catch (e2) {
           status = 0;

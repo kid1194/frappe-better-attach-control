@@ -11,7 +11,6 @@ import {
     isPlainObject,
     isEmpty,
     isRegExp,
-    log,
     error
 } from './../../utils';
 import {
@@ -24,18 +23,15 @@ import {
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
         opts = isPlainObject(opts) ? opts : {};
-        log('FileUploader options', opts);
         var extra = opts.extra || {};
         delete opts.extra;
         super(opts);
         if (this.uploader) this._override_uploader(opts, extra);
     }
     _override_uploader(opts) {
-        var up = this.uploader;
+        var up = this.uploader,
+        me = this;
         up._extra_restrictions = extra;
-        log('Uploader restrictions', up.restrictions);
-        log('Uploader extra restrictions', up._extra_restrictions);
-        var me = this;
         up.$watch('show_file_browser', function(show_file_browser) {
             if (!show_file_browser || !up.$refs.file_browser) return;
             me._override_file_browser(
@@ -62,7 +58,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            log('Uploader check restrictions', max_file_size, allowed_file_types, allowed_filename);
             if (!isEmpty(allowed_file_types)) {
                 is_correct_type = allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);
@@ -106,7 +101,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         };
         up.show_max_files_number_warning = function(file, max_number_of_files) {
             console.warn(
-                `File skipped because it exceeds the allowed specified limit of ${max_number_of_files} uploads`,
+                'File skipped because it exceeds the allowed specified limit of ' + max_number_of_files + ' uploads',
                 file
             );
             if (up.doctype) {
@@ -178,8 +173,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     _override_file_browser(fb, opts, extra) {
         fb._restrictions = opts;
         fb._extra_restrictions = extra;
-        log('FileBrowser restrictions', fb._restrictions);
-        log('FileBrowser extra restrictions', fb._extra_restrictions);
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
             var max_file_size = fb._restrictions.max_file_size,
@@ -187,7 +180,6 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            log('FileBrowser check restrictions', max_file_size, allowed_file_types, allowed_filename);
             if (!isEmpty(allowed_file_types)) {
                 is_correct_type = allowed_file_types.some(function(type) {
                     if (isRegExp(type)) return file.type && type.test(file.type);

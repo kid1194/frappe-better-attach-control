@@ -55,10 +55,7 @@ export function to_images_list(v) {
     v.forEach(function(d) {
         d = d.toLowerCase();
         if (d[0] === '.') d = d.substring(1, d.length);
-        if (is_image(d) && ret.indexOf(d) < 0) {
-            ret.push(d);
-            ret.push(get_type(d));
-        }
+        if (is_image(d) && ret.indexOf(d) < 0) ret.push(d);
     });
     return ret;
 }

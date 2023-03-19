@@ -4,6 +4,8 @@ A small plugin for Frappe that adds the support of customizations to the attach 
 
 ⚠️ **v2 is still in BETA stage** ⚠️
 
+[![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZWZ4TK5PG7G8W)
+
 ---
 
 ### Status
