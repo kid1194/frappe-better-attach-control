@@ -371,7 +371,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     },
     _setup_popover: function() {
         var url = this.value;
-        $(this.$value.find('a.attached-file-link').get(0))
+        this.$value.find('a.attached-file-link').first()
         .popover({
             trigger: 'hover',
             placement: 'top',
@@ -546,10 +546,10 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         }
         this._dialog_fn = {};
         this._dialog = frappe.get_modal(__(this.df.label), '');
-        var wrapper = this._dialog.find('.modal-dialog').get(0),
+        var wrapper = this._dialog.find('.modal-dialog').first(),
         body = wrapper.find('.modal-body'),
         container = $('<div class="container-fluid p-1"></div>').appendTo(body);
-        this._dialog_title = wrapper.find('.modal-title').get(0);
+        this._dialog_title = wrapper.find('.modal-title').first();
         this._dialog_title.parent().addClass('align-items-center');
         this._dialog_back = $('<span class="fa fa-chevron-left fa-fw ba-dialog-back ba-hidden"></span>');
         this._dialog_back.prependTo(this._dialog_title.parent());
@@ -607,7 +607,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._files_row.on('click', 'button.ba-preview', function() {
             var $el = $(this);
             if ($el.hasClass('ba-preview') && !$el.data('disabled') && !me._is_preview_dialog) {
-                var parent = $($el.closest('div.ba-attachment').get(0)),
+                var parent = $el.closest('div.ba-attachment').first(),
                 idx = parent.data('idx');
                 if (idx == null) idx = parent.attr('data-file-idx');
                 if (idx != null) {
@@ -620,7 +620,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._files_row.on('click', 'button.ba-remove', function() {
             var $el = $(this);
             if ($el.hasClass('ba-remove') && !$el.data('disabled') && !me._is_preview_dialog) {
-                var parent = $($el.closest('div.ba-attachment').get(0)),
+                var parent = $el.closest('div.ba-attachment').first(),
                 idx = parent.data('idx');
                 if (idx == null) idx = parent.attr('data-file-idx');
                 if (idx != null && me._allow_remove) {
@@ -629,7 +629,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                 }
             }
         });
-        this.$value.find('a.attached-file-link').get(0).on('click', function(e) {
+        this.$value.find('a.attached-file-link').first().on('click', function(e) {
             log('Attach field value clicked');
             var status;
             try {
