@@ -7,67 +7,70 @@
 
 
 .ba-hidden {
-    display: none;
+    display: none !important;
 }
-.ba-dialog-back {
-    display: inline-block;
-    margin-right: 1.5rem !important;
+.ba-hidden-overflow {
+    overflow: hidden;
 }
-html[dir="rtl"] .ba-dialog-back {
-    margin-left: 1.5rem !important;
-    margin-right: 0;
-    transform: rotate(180deg);
+.ba-preview-holder {
+    height: 50%;
+}
+.ba-preview-file {
+    max-width: 100%;
+    height: auto;
+}
+.ba-attachment {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid #e5e5e5;
+}
+.ba-attachment:first-child {
+    padding-top: 0;
+}
+.ba-attachment:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 .ba-link, .ba-link:hover {
     text-decoration: none;
 }
-.ba-filename {
+.ba-link {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
     color: #000;
     font-size: .9rem;
     font-weight: 300;
     line-height: 1.2;
-    display: -moz-box;
-    display: -webkit-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -o-box-orient: vertical;
-    -o-line-clamp: 1;
-    -moz-box-orient: vertical;
-    -moz-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
 }
-[data-theme="dark"] .ba-filename {
+[data-theme="dark"] .ba-link {
     color: #fff;
 }
-.ba-file-link {
-    color: #bababa;
-    font-size: .8rem;
-}
-[data-theme="dark"] .ba-file-link {
-    color: #e9e9e9;
-}
 .ba-meta {
+    padding: 0;
     color: #000;
     font-size: .7rem;
     font-weight: 300;
-    line-height: 1.2;
+    text-align: center;
 }
 [data-theme="dark"] .ba-meta {
     color: #fff;
 }
 .ba-file {
-    width: 30px;
-    height: 30px;
-    margin-left: 5px;
+    width: 25px !important;
+    height: 25px !important;
+    margin-left: 0;
+    margin-right: 10px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
     background-attachment: fixed;
 }
 html[dir="rtl"] .ba-file {
-    margin-left: 0;
-    margin-right: 5px;
+    margin-left: 10px;
+    margin-right: 0;
 }
 .ba-image {
     background-image: url('data:image/svg+xml,%3Csvg xmlns="http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width="0.75em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 384 512"%3E%3Cpath fill="%2324c824" d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zm192 0v128h128L256 0zM128 256c0 17.7-14.3 32-32 32s-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32zm88 32c5.3 0 10.2 2.6 13.2 6.9l88 128c3.4 4.9 3.7 11.3 1 16.5S310 448 304 448H80c-5.8 0-11.1-3.1-13.9-8.1s-2.8-11.2.2-16.1l48-80c2.9-4.8 8.1-7.8 13.7-7.8s10.8 2.9 13.7 7.8l12.8 21.4l48.3-70.2c3-4.3 7.9-6.9 13.2-6.9z"%2F%3E%3C%2Fsvg%3E');

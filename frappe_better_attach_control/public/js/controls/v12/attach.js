@@ -539,9 +539,10 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             this._is_preview_dialog = false;
             this._dialog_fn._reset_preview();
             this._files_row.children().remove();
+            var me = this;
             each(this._files, function(f, i) {
-                this._add_file_to_dialog(f, i);
-            }, this);
+                me._add_file_to_dialog(f, i);
+            });
             return;
         }
         this._dialog_fn = {};
