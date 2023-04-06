@@ -53,13 +53,25 @@ export function set_file_info(obj) {
 export function to_images_list(v) {
     var ret = [];
     v.forEach(function(d) {
-        d = d.toLowerCase();
-        if (d[0] === '.') d = d.substring(1, d.length);
-        if (is_image(d) && ret.indexOf(d) < 0) ret.push(d);
+        if (objectType(d) === 'String' && d.length) {
+            d = d.toLowerCase();
+            if (ret.indexOf(d) < 0 && is_ext_image(v)) ret.push(d);
+        }
     });
     return ret;
 }
 
+export function is_ext_image(v) {
+    if (v[0] === '.') v = v.substring(1, v.length);
+    return v.length && (v.includes('image/') || is_image(v));
+}
+
 export function get_file_type(ext) {
     return get_type(ext);
+}
+
+function objectType(v) {
+    if (v == null) return v === undefined ? 'Undefined' : 'Null';
+    let t = Object.prototype.toString.call(v).slice(8, -1);
+    return t === 'Number' && isNaN(v) ? 'NaN' : t;
 }

@@ -12,24 +12,9 @@
 .ba-hidden-overflow {
     overflow: hidden;
 }
-.ba-preview-holder {
-    height: 50%;
-}
-.ba-preview-file {
-    max-width: 100%;
-    height: auto;
-}
 .ba-attachment {
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-    border-bottom: 1px solid #e5e5e5;
-}
-.ba-attachment:first-child {
-    padding-top: 0;
-}
-.ba-attachment:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
 }
 .ba-link, .ba-link:hover {
     text-decoration: none;
@@ -41,35 +26,39 @@
     text-overflow: ellipsis;
     vertical-align: middle;
     color: #000;
-    font-size: .9rem;
-    font-weight: 300;
-    line-height: 1.2;
+    font-size: .8rem;
 }
 [data-theme="dark"] .ba-link {
     color: #fff;
 }
 .ba-meta {
+    margin-left: 5px;
+    margin-right: 0;
     padding: 0;
-    color: #000;
-    font-size: .7rem;
-    font-weight: 300;
-    text-align: center;
+    color: #6c757d;
+    font-size: .6rem;
 }
 [data-theme="dark"] .ba-meta {
     color: #fff;
 }
-.ba-file {
-    width: 25px !important;
-    height: 25px !important;
+[data-theme="rtl"] .ba-meta {
     margin-left: 0;
-    margin-right: 10px;
+    margin-right: 5px;
+}
+.ba-remove {
+    padding: 2px;
+}
+.ba-file {
+    width: 15px !important;
+    height: 15px !important;
+    margin-left: 0;
+    margin-right: 5px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
-    background-attachment: fixed;
 }
 html[dir="rtl"] .ba-file {
-    margin-left: 10px;
+    margin-left: 5px;
     margin-right: 0;
 }
 .ba-image {

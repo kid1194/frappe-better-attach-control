@@ -40,7 +40,8 @@ function isInteger(v) {
 }
 function isArrayLike(v) {
     return v != null && !$.isFunction(v) && isObjectLike(v)
-    && !$.isWindow(v) && !isInteger(v.nodeType) && isLength(v.length);
+    && !$.isWindow(v) && !isInteger(v.nodeType) && isLength(v.length)
+    && !isString(v);
 }
 function isFunction(v) {
     return v != null && $.isFunction(v);
@@ -59,7 +60,7 @@ export function isPlainObject(v) {
     return v != null && $.isPlainObject(v);
 }
 export function isIteratable(v) {
-    return isArray(v) || isObject(v);
+    return isArrayLike(v) || isObject(v);
 }
 export function isEmpty(v) {
     if (v == null) return true;
@@ -97,7 +98,14 @@ export function ifNull(v, d) {
 
 // Data
 export function deepClone(v) {
-    return isIteratable(v) ? parseJson(toJson(v)) : v;
+    if (!isIteratable(v)) return v;
+    var arr = isArrayLike(v),
+    ret = arr ? [] : {};
+    each(v, function(y, x) {
+        if (arr) ret.push(isIteratable(y) ? deepClone(y) : y);
+        else ret[x] = isIteratable(y) ? deepClone(y) : y;
+    });
+    return ret;
 }
 export function each(data, fn, bind) {
     bind = bind || null;

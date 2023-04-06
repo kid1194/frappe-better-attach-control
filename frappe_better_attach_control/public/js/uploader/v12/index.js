@@ -48,10 +48,10 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         });
         if (!isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
         up.dropfiles = function(e) {
-			up.is_dragging = false;
-			if (isObject(e) && isObject(e.dataTransfer))
-			    up.add_files(e.dataTransfer.files);
-		};
+            up.is_dragging = false;
+            if (isObject(e) && isObject(e.dataTransfer))
+                up.add_files(e.dataTransfer.files);
+        };
         up.check_restrictions = function(file) {
             var max_file_size = up.restrictions.max_file_size,
             { allowed_file_types = [], allowed_filename } = up._extra_restrictions,
@@ -77,26 +77,26 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 }
             }
             if (!is_correct_type) {
-				console.warn('File skipped because of invalid file type', file);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because of invalid file type', [file.name]),
-					indicator: 'orange'
-				});
-			}
-			if (!valid_file_size) {
-			    console.warn('File skipped because of invalid file size', file.size, file);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
-					indicator: 'orange'
-				});
-			}
-			if (!valid_filename) {
-			    console.warn('File skipped because of invalid filename', file, allowed_filename);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because of invalid filename', [file.name]),
-					indicator: 'orange'
-				});
-			}
+                console.warn('File skipped because of invalid file type', file);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because of invalid file type', [file.name]),
+                    indicator: 'orange'
+                });
+            }
+            if (!valid_file_size) {
+                console.warn('File skipped because of invalid file size', file.size, file);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
+                    indicator: 'orange'
+                });
+            }
+            if (!valid_filename) {
+                console.warn('File skipped because of invalid filename', file, allowed_filename);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because of invalid filename', [file.name]),
+                    indicator: 'orange'
+                });
+            }
             return is_correct_type && valid_file_size && valid_filename;
         };
         up.show_max_files_number_warning = function(file, max_number_of_files) {
@@ -199,26 +199,26 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 }
             }
             if (!is_correct_type) {
-				console.warn('File skipped because of invalid file type', file);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because of invalid file type', [file.name]),
-					indicator: 'orange'
-				});
-			}
-			if (!valid_file_size) {
-			    console.warn('File skipped because of invalid file size', file.size, file);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
-					indicator: 'orange'
-				});
-			}
-			if (!valid_filename) {
-			    console.warn('File skipped because of invalid filename', file, allowed_filename);
-				frappe.show_alert({
-					message: __('File "{0}" was skipped because of invalid filename', [file.name]),
-					indicator: 'orange'
-				});
-			}
+                console.warn('File skipped because of invalid file type', file);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because of invalid file type', [file.name]),
+                    indicator: 'orange'
+                });
+            }
+            if (!valid_file_size) {
+                console.warn('File skipped because of invalid file size', file.size, file);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because size exceeds {1} MB', [file.name, max_file_size / (1024 * 1024)]),
+                    indicator: 'orange'
+                });
+            }
+            if (!valid_filename) {
+                console.warn('File skipped because of invalid filename', file, allowed_filename);
+                frappe.show_alert({
+                    message: __('File "{0}" was skipped because of invalid filename', [file.name]),
+                    indicator: 'orange'
+                });
+            }
             return is_correct_type && valid_file_size && valid_filename;
         };
         fb.get_files_in_folder = function(folder) {

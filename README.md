@@ -188,8 +188,6 @@ bench restart
 | `disable_reload()` | Deny reloading attachments and hide reload button (Frappe >= v13.0.0). |
 | `enable_remove()` | Allow removing and clearing attachments and show the clear and remove buttons. |
 | `disable_remove()` | Deny removing and clearing attachments and hide the clear and remove buttons. |
-| `show_files()` | Open the uploaded files list and preview dialog (Only when multiple files is allowed). |
-| `show_preview()` | Open the preview dialog of the uploaded file (Only when multiple files is not allowed). |
 | `set_options(JSON)` | Set or change the plugin current options.  |
 
 ---

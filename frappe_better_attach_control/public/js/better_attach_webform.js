@@ -31,7 +31,7 @@
     return isNumber(v) && v === Number(parseInt(v));
   }
   function isArrayLike(v) {
-    return v != null && !$.isFunction(v) && isObjectLike(v) && !$.isWindow(v) && !isInteger(v.nodeType) && isLength(v.length);
+    return v != null && !$.isFunction(v) && isObjectLike(v) && !$.isWindow(v) && !isInteger(v.nodeType) && isLength(v.length) && !isString(v);
   }
   function isFunction(v) {
     return v != null && $.isFunction(v);
@@ -46,7 +46,7 @@
     return v != null && $.isPlainObject(v);
   }
   function isIteratable(v) {
-    return isArray(v) || isObject(v);
+    return isArrayLike(v) || isObject(v);
   }
   function isEmpty(v) {
     if (v == null)
@@ -81,7 +81,16 @@
     return v != null ? v : d;
   }
   function deepClone(v) {
-    return isIteratable(v) ? parseJson(toJson(v)) : v;
+    if (!isIteratable(v))
+      return v;
+    var arr = isArrayLike(v), ret = arr ? [] : {};
+    each(v, function(y, x) {
+      if (arr)
+        ret.push(isIteratable(y) ? deepClone(y) : y);
+      else
+        ret[x] = isIteratable(y) ? deepClone(y) : y;
+    });
+    return ret;
   }
   function each(data, fn, bind) {
     bind = bind || null;
@@ -1390,16 +1399,27 @@
   function to_images_list(v) {
     var ret = [];
     v.forEach(function(d) {
-      d = d.toLowerCase();
-      if (d[0] === ".")
-        d = d.substring(1, d.length);
-      if (is_image(d) && ret.indexOf(d) < 0)
-        ret.push(d);
+      if (objectType2(d) === "String" && d.length) {
+        d = d.toLowerCase();
+        if (ret.indexOf(d) < 0 && is_ext_image(v))
+          ret.push(d);
+      }
     });
     return ret;
   }
+  function is_ext_image(v) {
+    if (v[0] === ".")
+      v = v.substring(1, v.length);
+    return v.length && (v.includes("image/") || is_image(v));
+  }
   function get_file_type(ext) {
     return get_type(ext);
+  }
+  function objectType2(v) {
+    if (v == null)
+      return v === void 0 ? "Undefined" : "Null";
+    let t = Object.prototype.toString.call(v).slice(8, -1);
+    return t === "Number" && isNaN(v) ? "NaN" : t;
   }
 
   // uploader/index.js
@@ -1725,6 +1745,13 @@
       this._prevent_input = true;
       this.parse_validate_and_set_in_model(null);
       this.refresh();
+      if (!this._value.length) {
+        this._reset_value();
+        this.refresh();
+        this.frm.doc.docstatus == 1 ? this.frm.save("Update") : this.frm.save();
+        this._prevent_input = false;
+        return;
+      }
       this._remove_files(this._value, function(ret) {
         if (!cint(ret)) {
           error("Unable to clear the uploaded attachments.");
@@ -1739,10 +1766,10 @@
         }
         me.frm.sidebar && me.frm.sidebar.reload_docinfo();
         me.parse_validate_and_set_in_model(null).then(function() {
-          me._prevent_input = false;
           me._reset_value();
           me.refresh();
           me.frm.doc.docstatus == 1 ? me.frm.save("Update") : me.frm.save();
+          me._prevent_input = false;
         }).catch(function() {
           me._prevent_input = false;
         });
@@ -1764,17 +1791,23 @@
       this.set_upload_options();
       if (!this.image_upload_options) {
         this.image_upload_options = function(options) {
-          let opts = deepClone(options);
-          if (isEmpty(opts.restrictions.allowed_file_types)) {
+          var opts = deepClone(options);
+          if (isEmpty(opts.restrictions.allowed_file_types))
             opts.restrictions.allowed_file_types = ["image/*"];
-          } else {
-            opts.restrictions.allowed_file_types = to_images_list(toArray(opts.restrictions.allowed_file_types));
-          }
+          else
+            opts.restrictions.allowed_file_types = to_images_list(toArray(
+              opts.restrictions.allowed_file_types
+            ));
+          var extra = [];
+          each(opts.extra.allowed_file_types, function(v) {
+            if (isRegExp(v) && is_ext_image("" + v.source) || isString(v) && is_ext_image(v))
+              extra.push(v);
+          });
+          opts.extra.allowed_file_types = extra;
           if (!opts.restrictions.crop_image_aspect_ratio)
             opts.restrictions.crop_image_aspect_ratio = 1;
           return opts;
         }(this.upload_options);
-        this._parse_allowed_file_types(this.image_upload_options);
       }
       this.file_uploader = new frappe.ui.FileUploader(this.image_upload_options);
     }
@@ -1854,7 +1887,8 @@
     async on_upload_complete(attachment) {
       if (this.frm) {
         await this.parse_validate_and_set_in_model(attachment.file_url);
-        this.frm.attachments && this.frm.attachments.update_attachment(attachment);
+        if (this.frm.attachments)
+          this.frm.attachments.update_attachment(attachment);
         if (this._allow_multiple) {
           let up = this.file_uploader && this.file_uploader.uploader;
           if (up && up.files && up.files.every(function(file) {
@@ -1897,17 +1931,14 @@
       this._allow_remove = false;
       this._toggle_remove_button();
     }
-    show_files() {
-      if (this._allow_multiple && this._dialog_files && this._dialog_files.length && !this._dialog)
-        this._show_dialog();
-    }
-    show_preview() {
-      if (!this._allow_multiple && this._is_preview_dialog && this._value.length && !this._dialog)
-        this._show_dialog(this._value[0]);
-    }
     set_options(opts) {
       if (isPlainObject(opts)) {
-        this.df.better_attach_options = opts;
+        this.df.better_attach_options = $.extend(
+          true,
+          {},
+          isPlainObject(this.df.better_attach_options) ? this.df.better_attach_options : {},
+          opts
+        );
         this._update_options();
       }
     }
@@ -1929,7 +1960,7 @@
       this._unprocessed_files = [];
     }
     _update_options() {
-      if (this._options === null && isEmpty(this.df.better_attach_options) || this._options !== null && this._latest_options === this.df.better_attach_options)
+      if (isEmpty(this._options) && isEmpty(this.df.better_attach_options) || !isEmpty(this._options) && this._latest_options === this.df.better_attach_options)
         return;
       this._latest_options = this.df.better_attach_options;
       let opts = !isEmpty(this._latest_options) && parseJson(this._latest_options);
@@ -2006,16 +2037,35 @@
         each(opts.restrictions.allowed_file_types, function(t, i) {
           if (isRegExp(t)) {
             opts.restrictions.allowed_file_types.splice(i, 1);
-          } else if (isString(t) && (t[0] === "$" || t.includes("/*"))) {
-            if (t[0] === "$")
-              t = t.substring(1);
-            t = t.replace("/*", "/(.*?)");
-            t = new RegExp(t);
+          } else if (isString(t)) {
+            if (!t.length) {
+              opts.restrictions.allowed_file_types.splice(i, 1);
+              return;
+            }
+            if (t[0] === "$" || t.includes("/*")) {
+              if (t[0] === "$") {
+                opts.restrictions.allowed_file_types.splice(i, 1);
+                t = t.substring(1);
+              }
+              t = t.replace("/*", "/(.*?)");
+              t = new RegExp(t);
+            }
           }
           types.push(t);
         });
       }
       opts.extra.allowed_file_types = types;
+    }
+    _toggle_remove_button() {
+      var show = this._allow_remove;
+      this.$value && this.$value.find('[data-action="clear_attachment"]').toggle(show);
+      if (this._$list)
+        this._$list_group.find(".ba-actions").each(function(i, el) {
+          if (!show)
+            $(el).addClass("ba-hidden");
+          else
+            $(el).removeClass("ba-hidden");
+        });
     }
     _reload_control(opts) {
       if (this.upload_options)
@@ -2055,17 +2105,6 @@
       this._reset_value();
       this.set_input(value);
     }
-    _set_value(value) {
-      if (this._value.indexOf(value) >= 0)
-        return value;
-      this._value.push(value);
-      if (this._allow_multiple) {
-        this.value = toJson(this._value);
-        this._add_file(value, this._value.length - 1);
-        value = this.value;
-      }
-      return value;
-    }
     _set_max_attachments() {
       if (!this.frm)
         return;
@@ -2089,43 +2128,55 @@
         this.frm.meta.max_attachments = val;
       }
     }
+    _set_value(value) {
+      if (this._value.indexOf(value) >= 0)
+        return value;
+      this._value.push(value);
+      if (this._allow_multiple) {
+        this.value = toJson(this._value);
+        this._add_file(value, this._value.length - 1);
+        value = this.value;
+      } else if (!this._images_only) {
+        this._add_file(value, this._value.length - 1);
+      }
+      return value;
+    }
     _setup_display(reset) {
       if (this._allow_multiple) {
         if (reset)
           this._destroy_popover();
-        this._is_preview_dialog = false;
-        this._setup_dialog();
+        this._setup_list();
       } else {
         if (reset) {
-          if (!this._images_only)
-            this._destroy_popover();
-          else
-            this._destroy_value_handler();
+          this._destroy_list();
           if (this._files.length)
             clear(this._files);
-          if (this._dialog_files) {
-            clear(this._dialog_files);
-            this._dialog_files = null;
-          }
         }
-        if (this._images_only)
-          this._setup_popover();
-        else {
-          this._is_preview_dialog = true;
-          this._setup_dialog();
-        }
+        this._setup_popover();
       }
       this._display_ready = true;
     }
     _setup_popover() {
-      var url = this.value;
-      this.$value.find("a.attached-file-link").first().popover({
+      if (this._popover_ready)
+        return;
+      var me = this;
+      this.$value.find(".attached-file-link").popover({
         trigger: "hover",
         placement: "top",
         content: function() {
-          return `<div>
-                    <img src="${url}" style="width:150px!important;height:auto;object-fit:contain"/>
-                </div>`;
+          let file = !me._images_only ? me._files[me._files.length - 1] : null, url = file ? file.file_url : me.value;
+          if (file && file.class === "image" || me._images_only) {
+            return '<div><img src="' + url + '" style="width:150px!important;height:auto;object-fit:contain"/></div>';
+          }
+          if (file) {
+            if (file.class === "video") {
+              return '<video style="width:150px!important;height:100px!important;" controls><source src="' + url + '" type="' + file.type + '"/>' + __("Your browser does not support the video element.") + "</video>";
+            }
+            if (file.class === "audio") {
+              return '<audio style="width:150px!important;height:60px!important;" controls><source src="' + url + '" type="' + file.type + '"/>' + __("Your browser does not support the audio element.") + "</audio>";
+            }
+          }
+          return "<div>" + __("This file type has no preview.") + "</div>";
         },
         html: true
       });
@@ -2133,12 +2184,10 @@
     }
     _destroy_popover() {
       if (this._popover_ready)
-        this.$value.find("a.attached-file-link").first().popover("destroy");
+        this.$value.find(".attached-file-link").popover("dispose");
       this._popover_ready = null;
     }
     _add_file(value, idx) {
-      if (!this._allow_multiple)
-        return;
       var val = {
         name: null,
         file_name: get_filename(value),
@@ -2190,7 +2239,7 @@
       } else {
         if (isEmpty(val.name))
           val.name = val.file_name;
-        this._add_dialog_file(val, idx);
+        this._add_list_file(val, idx);
       }
     }
     _process_files(idx) {
@@ -2201,9 +2250,10 @@
         frappe.db.get_value("File", { file_url: this._files[idx].file_url }, "name", function(ret) {
           if (isPlainObject(ret) && ret.name) {
             me._files[idx].name = ret.name;
-            me.frm.attachments.update_attachment(me._files[idx]);
+            if (me.frm && me.frm.attachments)
+              me.frm.attachments.update_attachment(me._files[idx]);
           }
-          me._add_dialog_file(me._files[idx], idx);
+          me._add_list_file(me._files[idx], idx);
         });
         return;
       }
@@ -2224,32 +2274,29 @@
             each(ret, function(val) {
               if (isPlainObject(val) && me._files[idx2].file_url === val.file_url) {
                 me._files[idx2].name = val.name;
-                me.frm.attachments.update_attachment(me._files[idx2]);
+                if (me.frm && me.frm.attachments)
+                  me.frm.attachments.update_attachment(me._files[idx2]);
                 return false;
               }
             });
           }
           me._unprocessed_files.splice(i, 1);
-          me._add_dialog_file(me._files[idx2], idx2);
+          me._add_list_file(me._files[idx2], idx2);
         });
         if (me._unprocessed_files.length)
           clear(me._unprocessed_files);
       });
     }
-    _add_dialog_file(file, idx) {
-      if (!this._allow_multiple)
+    _add_list_file(file, idx) {
+      if (!this._allow_multiple || !this._$list)
         return;
       let meta = "";
       if (file.size && file.size_str) {
-        meta = '<div class="col-auto ba-meta">' + file.size_str + "</div>";
+        meta = '<div class="ba-meta">' + file.size_str + "</div>";
       }
-      if (!this._dialog_files)
-        this._dialog_files = [];
-      this._dialog_files.push({
-        idx,
-        html: '<div class="col-12 ba-attachment" data-file-idx="' + idx + '"><div class="row align-items-center"><div class="col ba-hidden-overflow"><div class="d-flex align-items-center"><div class="ba-file ba-' + file.class + '"></div><a href="' + file.file_url + '" class="ba-link" target="__blank">' + file.file_name + "</a></div></div>" + meta + '<div class="col-auto"><button type="button" class="ba-preview btn btn-secondary btn-xs mx-0"><span class="fa fa-eye fa-fw"></span></button><button type="button" class="ba-remove btn btn-danger btn-xs mx-0"><span class="fa fa-times fa-fw"></span></button></div></div></div>',
-        preview: file.can_preview
-      });
+      this._$list_group.append($(
+        '<li class="list-group-item ba-attachment" data-file-idx="' + idx + '"><div class="row align-items-center"><div class="col ba-hidden-overflow"><div class="flex align-center"><div class="ba-file ba-' + file.class + '"></div><a href="' + file.file_url + '" class="ba-link" target="__blank">' + file.file_name + "</a>" + meta + '</div></div><div class="col-auto ba-actions"><button type="button" class="ba-remove btn btn-danger btn-xs mx-0"><span class="fa fa-times fa-fw"></span></button></div></div></li>'
+      ));
     }
     _remove_files(data, callback, error2) {
       request("remove_files", { files: data }, callback, error2);
@@ -2264,14 +2311,10 @@
         this._files.splice(idx, 1);
       len--;
       this.value = len ? toJson(this._value) : null;
-      if (this._allow_multiple) {
-        var me = this;
-        each(this._dialog_files, function(f, i) {
-          if (f.idx === idx) {
-            me._dialog_files.splice(i, 1);
-            return false;
-          }
-        });
+      if (this._allow_multiple && this._$list) {
+        let child = this._$list_group.find('li[data-file-idx="' + idx + '"]');
+        if (child.length)
+          child.remove();
       }
       this._remove_file_by_url(url);
     }
@@ -2283,6 +2326,8 @@
         });
         return;
       }
+      if (!this.frm.attachments)
+        return;
       var me = this;
       this.frm.attachments.remove_attachment_by_filename(
         url,
@@ -2294,162 +2339,25 @@
         }
       );
     }
-    _toggle_remove_button() {
-      let show = this._allow_remove;
-      this.$value && this.$value.find('[data-action="clear_attachment"]').toggle(show);
-      if (this._allow_multiple && this._dialog) {
-        this._dialog.hide();
-        this._show_dialog();
-      }
-    }
-    _setup_dialog() {
-      if (!this._is_preview_dialog && !this._dialog_files)
-        this._dialog_files = [];
-      if (this._value_handler)
+    _setup_list() {
+      if (this._$list)
         return;
-      var me = this;
-      this._value_handler = function(e) {
-        if (isObject(e))
-          e.preventDefault();
-        if (!me._is_preview_dialog)
-          me._show_dialog();
-        else
-          me._show_dialog(me._value[0]);
-      };
-      this.$value.find("a.attached-file-link").first().click(this._value_handler);
-    }
-    _destroy_value_handler() {
-      if (this._value_handler)
-        this.$value.find("a.attached-file-link").first().off("click", this._value_handler);
-      this._dialog_files = this._value_handler = null;
-    }
-    _show_dialog(file) {
-      if (!isPlainObject(file) || this._allow_multiple)
-        file = null;
-      if (!file && this._is_preview_dialog)
-        return;
-      if (file && ["image", "video", "audio"].indexOf(file.class) < 0) {
-        window.open(file.file_url, "_blank");
-        return;
-      }
-      this._dialog = new frappe.ui.Dialog({
-        title: file ? file.file_name : __(this.df.label)
+      $(this.$value.children()[0]).children().each(function(i, el) {
+        $(el).addClass("ba-hidden");
       });
-      let $wrapper = this._dialog.$wrapper.find(".modal-dialog").first().addClass("modal-dialog-scrollable"), $container = $('<div class="container-fluid p-0"></div>').appendTo($wrapper.find(".modal-body").first());
-      this._$dialog_title = $wrapper.find(".modal-title").first();
-      this._$files_row = $('<div class="row"></div>').appendTo($container);
-      if (file)
-        this._$files_row.addClass("ba-hidden");
-      this._$preview_row = $('<div class="row ba-preview-holder"></div>').appendTo($container);
-      if (!file)
-        this._$preview_row.addClass("ba-hidden");
-      this._$preview_col = $('<div class="col-12 d-flex align-items-center justify-content-center"></div>').appendTo(this._$preview_row);
-      this._$preview = null;
-      var me = this;
-      this._dialog_fn = {
-        setup_preview: function(file2) {
-          if (file2.class === "image") {
-            me._$preview = $(`<img>`).addClass("ba-preview-file").attr("src", file2.file_url).attr("alt", file2.file_name).appendTo(me._$preview_col);
-          } else if (file2.class === "video") {
-            me._$preview = $(`<video class="ba-preview-file" controls>
-                            <source src="${file2.file_url}" type="${file2.type}"/>
-                            ${__("Your browser does not support the video element.")}
-                        </video>`).appendTo(me._$preview_col);
-          } else if (file2.class === "audio") {
-            me._$preview = $(`<audio class="ba-preview-file" controls>
-                            <source src="${file2.file_url}" type="${file2.type}"/>
-                            ${__("Your browser does not support the audio element.")}
-                        </audio>`).appendTo(me._$preview_col);
-          }
-          if (me._is_preview_dialog)
-            return;
-          if (me._$preview) {
-            me._$dialog_title.html(file2.file_name);
-            if (!me._is_preview_dialog)
-              me._dialog_fn.preview_toggle(true);
-          } else {
-            window.open(file2.file_url, "_blank");
-          }
-        }
-      };
-      if (!file) {
-        this._dialog_fn.preview_toggle = function(show) {
-          me._$preview_row.toggleClass("ba-hidden", !show);
-          me._$files_row.toggleClass("ba-hidden", show);
-        };
-        this._dialog_fn.reset_preview = function() {
-          if (me._is_preview_dialog)
-            return;
-          me._dialog_fn.preview_toggle(false);
-          me._$dialog_title.html(__(me.df.label));
-          if (me._$preview)
-            me._$preview.remove();
-          me._$preview = null;
-        };
-        this._dialog_fn.on_preview = function() {
-          let $el = $(this);
-          if (!$el.hasClass("ba-preview"))
-            $el = $el.parent();
-          if ($el.hasClass("ba-preview") && !$el.data("disabled") && !me._is_preview_dialog) {
-            let parent = $el.closest(".ba-attachment").first(), idx = parent.data("idx");
-            if (idx == null)
-              idx = parent.attr("data-file-idx");
-            if (idx != null) {
-              idx = cint(idx);
-              let file2 = me._files.length > idx ? me._files[idx] : null;
-              if (file2) {
-                me._dialog.set_secondary_action_label(__("Back"));
-                me._dialog_fn.setup_preview(file2);
-              }
-            }
-          }
-        };
-        this._dialog_fn.on_remove = function() {
-          let $el = $(this);
-          if (!$el.hasClass("ba-remove"))
-            $el = $el.parent();
-          if ($el.hasClass("ba-remove") && !$el.data("disabled") && !me._is_preview_dialog) {
-            let parent = $el.closest(".ba-attachment").first(), idx = parent.data("idx");
-            if (idx == null)
-              idx = parent.attr("data-file-idx");
-            if (idx != null && me._allow_remove) {
-              me._remove_file_by_idx(cint(idx));
-              parent.remove();
-            }
-          }
-        };
-        this._$files_row.on("click", "button.ba-preview", this._dialog_fn.on_preview).on("click", "button.ba-remove", this._dialog_fn.on_remove);
-        each(this._dialog_files, function(f) {
-          let dom = $(f.html);
-          dom.appendTo(me._$files_row);
-          dom.data("idx", f.idx);
-          if (!f.preview)
-            dom.find("div.ba-preview").addClass("disabled").data("disabled", 1);
-          if (!me._allow_remove)
-            dom.find("div.ba-remove").addClass("disabled").data("disabled", 1);
+      this._$list = $(
+        '<div class="attached-file row align-center mt-4 ba-hidden"><div class="col-12"><ul class="list-group"></ul></div></div>'
+      ).appendTo(this.input_area);
+      this._$list_group = this._$list.find("ul.list-group");
+    }
+    _destroy_list() {
+      if (this._$list) {
+        this._$list.remove();
+        $(this.$value.children()[0]).children().each(function(i, el) {
+          $(el).removeClass("ba-hidden");
         });
       }
-      if (file)
-        this._dialog_fn.setup_preview(file);
-      this._dialog.set_secondary_action_label(__("Close"));
-      this._dialog.set_secondary_action(function() {
-        if (!me._is_preview_dialog && me._$preview) {
-          me._dialog_fn.reset_preview();
-          me._dialog.set_secondary_action_label(__("Close"));
-        } else
-          me._dialog.hide();
-      });
-      this._dialog.show();
-      this._dialog.$wrapper.on("hidden.bs.modal", function() {
-        $(this).data("bs.modal", null);
-        if (!me._is_preview_dialog) {
-          me._$files_row.off("click", "button.ba-preview", me._dialog_fn.on_preview).off("click", "button.ba-remove", me._dialog_fn.on_remove);
-        }
-        $(this).remove();
-        me._dialog = me._$dialog_title = null;
-        me._$files_row = me._$preview_row = me._$preview_col = null;
-        me._$preview = me._dialog_fn = null;
-      });
+      this._$list = this._$list_group = null;
     }
     _update_input(value, dataurl) {
       value = value || this._value[this._value.length - 1];
@@ -2466,6 +2374,8 @@
         $link.html(
           this._value.length > 1 ? this._value.length + " " + __("files uploaded") : filename
         ).attr("href", "#");
+        if (this._$list && this._$list.hasClass("ba-hidden"))
+          this._$list.removeClass("ba-hidden");
       } else {
         $link.html(filename).attr("href", dataurl || value);
       }
@@ -2484,8 +2394,11 @@
       clear(this._value);
       if (this._allow_multiple) {
         clear(this._files);
-        if (this._dialog_files)
-          clear(this._dialog_files);
+        if (this._$list) {
+          this._$list_group.children().each(function(i, el) {
+            $(el).remove();
+          });
+        }
       }
     }
   };
