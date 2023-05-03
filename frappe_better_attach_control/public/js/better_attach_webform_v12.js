@@ -1886,6 +1886,9 @@
       this._allow_remove = true;
       this._display_ready = false;
       this._unprocessed_files = [];
+      frappe.realtime.on("better_attach_console", function(ret) {
+        console.log(ret);
+      });
     },
     _update_options: function() {
       if (isEmpty(this._options) && isEmpty(this.df.better_attach_options) || !isEmpty(this._options) && this._latest_options === this.df.better_attach_options)
@@ -2207,15 +2210,17 @@
     _add_list_file: function(file, idx) {
       if (!this._allow_multiple || !this._$list)
         return;
-      var meta = "";
+      var meta = "", rem = !this._allow_remove ? " ba-hidden" : "";
       if (file.size && file.size_str) {
         meta = '<div class="ba-meta">' + file.size_str + "</div>";
       }
       this._$list_group.append($(
-        '<li class="list-group-item ba-attachment" data-file-idx="' + idx + '"><div class="row align-items-center"><div class="col ba-hidden-overflow"><div class="flex align-center"><div class="ba-file ba-' + file.class + '"></div><a href="' + file.file_url + '" class="ba-link" target="__blank">' + file.file_name + "</a>" + meta + '</div></div><div class="col-auto ba-actions"><button type="button" class="ba-remove btn btn-danger btn-xs mx-0"><span class="fa fa-times fa-fw"></span></button></div></div></li>'
+        '<li class="list-group-item ba-attachment" data-file-idx="' + idx + '"><div class="row align-items-center"><div class="col ba-hidden-overflow"><div class="flex align-center"><div class="ba-file ba-' + file.class + '"></div><a href="' + file.file_url + '" class="ba-link" target="__blank">' + file.file_name + "</a>" + meta + '</div></div><div class="col-auto ba-actions"><button type="button" class="ba-remove btn btn-danger btn-xs mx-0' + rem + '"><span class="fa fa-times fa-fw"></span></button></div></div></li>'
       ));
     },
     _remove_files: function(data, callback, error2) {
+      if (!isArray(data))
+        data = [data];
       request("remove_files", { files: data }, callback, error2);
     },
     _remove_file_by_idx: function(idx) {
@@ -2236,15 +2241,13 @@
       this._remove_file_by_url(url);
     },
     _remove_file_by_url: function(url) {
-      if (!this.frm) {
-        this._remove_files([url], function(ret) {
+      if (!this.frm || !this.frm.attachments) {
+        this._remove_files(url, function(ret) {
           if (!cint(ret))
             error("Unable to remove the uploaded attachment ({0}).", [url]);
         });
         return;
       }
-      if (!this.frm.attachments)
-        return;
       var me = this;
       this.frm.attachments.remove_attachment_by_filename(
         url,
@@ -2265,6 +2268,20 @@
         '<div class="attached-file row align-center mt-4 ba-hidden"><div class="col-12"><ul class="list-group"></ul></div></div>'
       ).appendTo(this.input_area);
       this._$list_group = this._$list.find("ul.list-group");
+      this._$list_group.click(".ba-remove", function() {
+        var $el = $(this);
+        if (!$el.hasClass("ba-remove"))
+          return;
+        var $parent = $el.parents(".ba-attachment");
+        if (!$parent.length)
+          return;
+        var idx = $parent.attr("data-file-idx");
+        if (!idx || !/[0-9]+/.test("" + idx))
+          return;
+        idx = cint(idx);
+        if (idx >= 0)
+          _remove_file_by_idx(idx);
+      });
     },
     _destroy_list: function() {
       if (this._$list) {
