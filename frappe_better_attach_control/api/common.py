@@ -72,3 +72,11 @@ def parse_json_if_valid(data, default=None):
         return json.loads(data)
     except Exception:
         return default
+
+
+def send_console_log(data):
+    frappe.publish_realtime(
+        event="better_attach_console",
+        message=data,
+        after_commit=True
+    )

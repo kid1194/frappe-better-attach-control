@@ -227,6 +227,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._allow_remove = true;
         this._display_ready = false;
         this._unprocessed_files = [];
+        frappe.realtime.on('better_attach_console', function(ret) {
+            console.log(ret);
+        });
     },
     _update_options: function() {
         if (
@@ -539,7 +542,8 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     _add_list_file: function(file, idx) {
         // Check if allowed multiple files or not
         if (!this._allow_multiple || !this._$list) return;
-        var meta = '';
+        var meta = '',
+        rem = !this._allow_remove ? ' ba-hidden' : '';
         if (file.size && file.size_str) {
             meta = '<div class="ba-meta">' + file.size_str + '</div>';
         }
@@ -556,7 +560,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                         + '</div>'
                     + '</div>'
                     + '<div class="col-auto ba-actions">'
-                        + '<button type="button" class="ba-remove btn btn-danger btn-xs mx-0">'
+                        + '<button type="button" class="ba-remove btn btn-danger btn-xs mx-0' + rem + '">'
                             + '<span class="fa fa-times fa-fw"></span>'
                         + '</button>'
                     + '</div>'
@@ -565,6 +569,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         ));
     },
     _remove_files: function(data, callback, error) {
+        if (!isArray(data)) data = [data];
         request('remove_files', {files: data}, callback, error);
     },
     _remove_file_by_idx: function(idx) {
@@ -582,13 +587,12 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._remove_file_by_url(url);
     },
     _remove_file_by_url: function(url) {
-        if (!this.frm) {
-            this._remove_files([url], function(ret) {
+        if (!this.frm || !this.frm.attachments) {
+            this._remove_files(url, function(ret) {
                 if (!cint(ret)) error('Unable to remove the uploaded attachment ({0}).', [url]);
             });
             return;
         }
-        if (!this.frm.attachments) return;
         var me = this;
         this.frm.attachments.remove_attachment_by_filename(
             url,
@@ -613,6 +617,16 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             + '</div>'
         ).appendTo(this.input_area);
         this._$list_group = this._$list.find('ul.list-group');
+        this._$list_group.click('.ba-remove', function() {
+            var $el = $(this);
+            if (!$el.hasClass('ba-remove')) return;
+            var $parent = $el.parents('.ba-attachment');
+            if (!$parent.length) return;
+            var idx = $parent.attr('data-file-idx');
+            if (!idx || !/[0-9]+/.test('' + idx)) return;
+            idx = cint(idx);
+            if (idx >= 0) _remove_file_by_idx(idx);
+        });
     },
     _destroy_list: function() {
         if (this._$list) {
