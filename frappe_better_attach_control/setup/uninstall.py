@@ -8,7 +8,13 @@ import frappe
 
 
 def after_uninstall():
-    doctype = "Custom Field"
-    filters = {"dt": "DocField", "fieldname": "better_attach_options"}
-    if frappe.db.get_value(doctype, filters):
-        frappe.db.delete(doctype, filters)
+    dt = "Custom Field"
+    target = "DocField"
+    filters = {
+        "dt": target,
+        "fieldname": "better_attach_options"
+    }
+    if frappe.db.get_value(dt, filters):
+        frappe.db.delete(dt, filters)
+        frappe.clear_cache(doctype=target)
+        frappe.db.updatedb(target)

@@ -5,4 +5,5 @@
 
 
 from .attachment import *
+from .field import *
 from .file_manager import *

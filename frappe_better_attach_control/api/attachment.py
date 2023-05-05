@@ -12,7 +12,7 @@ from .common import parse_json_if_valid, send_console_log
 _FILE_DOCTYPE_ = "File"
 
 
-@frappe.whitelist(methods=["POST"])
+@frappe.whitelist(methods=["POST"], allow_guest=True)
 def remove_files(files):
     if files and isinstance(files, str):
         files = parse_json_if_valid(files)

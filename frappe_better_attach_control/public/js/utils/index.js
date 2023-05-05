@@ -76,11 +76,12 @@ export function isRegExp(v) {
 }
 
 // Json
-export function parseJson(v) {
+export function parseJson(v, d) {
+    if (d === undefined) d = v;
     try {
         return JSON.parse(v);
     } catch(e) {
-        return v;
+        return d;
     }
 }
 export function toJson(v) {

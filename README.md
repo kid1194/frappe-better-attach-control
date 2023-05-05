@@ -150,16 +150,15 @@ bench restart
 
 ### Usage
 1. Go to Customization > Customize Form
-2. Enter the form type/name (Ex: 'User')
-3. Scroll down to the form fields area
+2. Enter the form doctype (Ex: 'User')
+3. Scroll down to the fields area
 4. Create an **Attach** or **Attach Image** field or edit an existing custom field
-5. Inside the field's custom property, **Better Attach Options**, add a JSON string of the options you want.
+5. Inside the field's **Options** property, add the options you want as a JSON string.
 
     Ex: `{"allowed_file_types": [".jpg", ".png", ".gif"]}`
 
 ##### Remember
-1. You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.
-2. Use the custom field property called **Better Attach Options**, that appears for **Attach** & **Attach Image** fields, instead of the default **Options** field property.
+You can't modify the original fields of a doctype, so create a new field or clone and modify the entire doctype.
 
 ---
 
@@ -168,7 +167,7 @@ bench restart
 | :--- | :--- |
 | `dialog_title` 🔴 | Upload dialog title to be displayed (✴️Frappe >= v14.0.0).<br/><br/>- Example: `"Upload Images"`<br/>- Default: `"Upload"` |
 | `upload_notes` | Upload text to be displayed.<br/><br/>- Example: `"Only images and videos, with maximum size of 2MB, are allowed to be uploaded"`<br/>- Default: `""` |
-| `disable_file_browser` 🔴 | Disable file browser uploads.<br/><br/>- Default: `false` |
+| `disable_file_browser` 🔴 | Disable file browser uploads.<br/><br/>⚠️ *(File browser is always disabled in Web Form)*<br/><br/>- Default: `false` |
 | `allow_multiple` | Allow multiple uploads.<br/><br/>⚠️ *(Field value is a JSON array of files url)*<br/><br/>- Default: `false` |
 | `max_file_size` | Maximum file size (in bytes) that is allowed to be uploaded.<br/><br/>- Example: `2048` for `2KB`<br/>- Default: `Value of maximum file size in Frappe's settings` |
 | `allowed_file_types` | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br/><br/>⚠️ *(File extensions must have a leading dot ".")*<br/>⚠️ *(RegExp string types will not be used to in HTML accept attribute)*<br/><br/>- Example: `["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]`<br/>- Default: `null` or `["image/*"]` |
