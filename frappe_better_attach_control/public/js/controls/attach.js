@@ -39,10 +39,11 @@ import {
 frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.ControlAttach {
     make() {
         super.make();
-        this._setup_control();
+        this._setup_control(1);
+        if (this._native_options) this._update_options();
     }
     make_input() {
-        this._setup_control();
+        this._setup_control(2);
         if (!this._native_options) return;
         this._update_options();
         super.make_input();
@@ -251,7 +252,8 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         }
     }
     // Private Methods
-    _setup_control() {
+    _setup_control(level) {
+        this._setup_level = level;
         if (this._is_better) return;
         this._is_better = 1;
         this._doctype = (this.frm || {}).doctype
@@ -299,11 +301,13 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 function(ret) {
                     ret = parseJson(ret, null);
                     if (isPlainObject(ret)) me.df.better_attach = ret;
-                    me.make_input();
+                    if (me._setup_level === 2) me.make_input();
+                    else me._update_options();
                 },
                 function() {
                     error('Unable to get the field options.');
-                    me.make_input();
+                    if (me._setup_level === 2) me.make_input();
+                    else me._update_options();
                 }
             );
         }
