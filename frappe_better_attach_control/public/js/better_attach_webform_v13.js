@@ -63,11 +63,13 @@
   function isRegExp(v) {
     return v != null && ofType(v, "RegExp");
   }
-  function parseJson(v) {
+  function parseJson(v, d) {
+    if (d === void 0)
+      d = v;
     try {
       return JSON.parse(v);
     } catch (e) {
-      return v;
+      return d;
     }
   }
   function toJson(v) {
@@ -1711,11 +1713,14 @@
   frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     make: function() {
       this._super();
-      this._setup_control();
-      this._update_options();
+      this._setup_control(1);
+      if (this._native_options)
+        this._update_options();
     },
     make_input: function() {
-      this._setup_control();
+      this._setup_control(2);
+      if (!this._native_options)
+        return;
       this._update_options();
       this._super();
       this._toggle_remove_button();
@@ -1912,20 +1917,23 @@
     },
     set_options: function(opts) {
       if (isPlainObject(opts)) {
-        this.df.better_attach_options = $.extend(
+        this.df.better_attach = $.extend(
           true,
           {},
-          isPlainObject(this.df.better_attach_options) ? this.df.better_attach_options : {},
+          isPlainObject(this.df.better_attach) ? this.df.better_attach : {},
           opts
         );
         this._update_options();
       }
     },
     // Private Methods
-    _setup_control: function() {
+    _setup_control: function(level) {
+      this._setup_level = level;
       if (this._is_better)
         return;
       this._is_better = 1;
+      this._doctype = (this.frm || {}).doctype || this.doctype || (this.doc || {}).doctype;
+      this._is_webform = this._doctype === "Web Form" || this.df.parenttype === "Web Form" || this.df.is_web_form || this.doc && this.doc.web_form_name;
       this._df_options = this.df.options;
       this._options = null;
       this._latest_options = null;
@@ -1940,12 +1948,49 @@
       frappe.realtime.on("better_attach_console", function(ret) {
         console.log(ret);
       });
+      this.df.better_attach = null;
+      if (!isEmpty(this._df_options)) {
+        this._native_options = true;
+        if (isPlainObject(this._df_options))
+          this.df.better_attach = this._df_options;
+        else if (isString(this._df_options)) {
+          this._df_options = parseJson(this._df_options, null);
+          if (isPlainObject(this._df_options))
+            this.df.better_attach = this.df.options = this._df_options;
+          else
+            this._df_options = this.df.options;
+        }
+      } else {
+        var me = this;
+        request(
+          "get_options",
+          {
+            doctype: this._doctype,
+            name: this.df.fieldname
+          },
+          function(ret) {
+            ret = parseJson(ret, null);
+            if (isPlainObject(ret))
+              me.df.better_attach = ret;
+            if (me._setup_level === 2)
+              me.make_input();
+            else
+              me._update_options();
+          },
+          function() {
+            error("Unable to get the field options.");
+            if (me._setup_level === 2)
+              me.make_input();
+            else
+              me._update_options();
+          }
+        );
+      }
     },
     _update_options: function() {
-      if (isEmpty(this._options) && isEmpty(this.df.better_attach_options) || !isEmpty(this._options) && this._latest_options === this.df.better_attach_options)
+      if (isEmpty(this._options) && isEmpty(this.df.better_attach) || !isEmpty(this._options) && this._latest_options === this.df.better_attach)
         return;
-      this._latest_options = this.df.better_attach_options;
-      var opts = !isEmpty(this._latest_options) && parseJson(this._latest_options);
+      let opts = this._latest_options = this.df.better_attach;
       opts = !isEmpty(opts) && isPlainObject(opts) ? this._parse_options(opts) : {};
       this._options = opts.options || null;
       this._reload_control(opts);
@@ -2006,6 +2051,8 @@
           tmp.options.extra[k[0]] = parseVal(opts[k[0]], k[1]);
         }
       );
+      if (this._is_webform)
+        tmp.options.disable_file_browser = true;
       this._parse_allowed_file_types(tmp.options);
       return tmp;
     },
