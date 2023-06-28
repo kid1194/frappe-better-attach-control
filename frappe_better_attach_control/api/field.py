@@ -31,7 +31,7 @@ def get_options(doctype, name):
     options = frappe.db.get_value(
         _FIELD_DOCTYPE_,
         {
-            "fieldname": name
+            "fieldname": name,
             "parent": doctype,
             "parenttype": "DocType",
             "parentfield": "fields",

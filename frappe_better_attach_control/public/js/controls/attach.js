@@ -114,14 +114,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this.set_upload_options();
         if (!this.image_upload_options) {
             this.image_upload_options = (function(options) {
-                var opts = deepClone(options);
+                let opts = deepClone(options),
+                extra = [];
                 if (isEmpty(opts.restrictions.allowed_file_types))
                     opts.restrictions.allowed_file_types = ['image/*'];
                 else
                     opts.restrictions.allowed_file_types = to_images_list(toArray(
                         opts.restrictions.allowed_file_types
                     ));
-                var extra = [];
                 each(opts.extra.allowed_file_types, function(v) {
                     if (
                         (isRegExp(v) && is_ext_image('' + v.source))
@@ -172,7 +172,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         let val = toArray(value, null);
         if (isArray(val)) {
             if (!val.length) return;
-            let update = 0;
+            var update = 0;
             if (!this._allow_multiple) {
                 value = val[0];
                 if (!isEmpty(value) && isString(value) && this._value.indexOf(value) < 0) {
@@ -204,7 +204,9 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                 this.frm.attachments.update_attachment(attachment);
             if (this._allow_multiple) {
                 let up = this.file_uploader && this.file_uploader.uploader;
-                if (up && up.files && up.files.every(function(file) { return !file.failed && file.request_succeeded; })) {
+                if (up && up.files && up.files.every(function(file) {
+                    return !file.failed && file.request_succeeded;
+                })) {
                     this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
                 }
             } else {
@@ -276,7 +278,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         this._unprocessed_files = [];
         
         frappe.realtime.on('better_attach_console', function(ret) {
-            console.log(ret);
+            log(ret);
         });
         
         this.df.better_attach = null;
