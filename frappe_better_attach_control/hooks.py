@@ -48,9 +48,4 @@ better_webform_include_js = [
 ])
 
 
-after_install = "frappe_better_attach_control.setup.install.after_install"
-after_migrate = "frappe_better_attach_control.setup.install.after_install"
-after_uninstall = "frappe_better_attach_control.setup.uninstall.after_uninstall"
-
-
 update_website_context = "frappe_better_attach_control.api.website.website_context"

@@ -35,7 +35,6 @@ def get_options(doctype, name):
             "parent": doctype,
             "parenttype": "DocType",
             "parentfield": "fields",
-            "parentfield": "fields",
             "fieldtype": ["in", ["Attach", "Attach Image"]]
         },
         "options"

@@ -6,7 +6,10 @@
 
 import frappe
 
-from .common import parse_json_if_valid, send_console_log
+from .common import (
+    parse_json_if_valid,
+    send_console_log
+)
 
 
 _FILE_DOCTYPE_ = "File"
