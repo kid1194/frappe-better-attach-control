@@ -9,7 +9,7 @@ import os
 import frappe
 from frappe import _
 
-from .common import error
+from .common import error, to_json_if_valid
 
 
 def website_context(context):
@@ -17,9 +17,10 @@ def website_context(context):
         fields = 0
         
         try:
-            fields = frappe.db.count(
+            fields = frappe.get_all(
                 "Web Form Field",
-                {
+                fields=["fieldname", "options"]
+                filters={
                     "parent": context.doc.name,
                     "parenttype": "Web Form",
                     "parentfield": "web_form_fields",
@@ -27,10 +28,24 @@ def website_context(context):
                 }
             )
         except Exception:
-            fields = 0
+            fields = None
             error(_("Unable to get the Attach fields of the web form."), throw=False)
         
-        if fields > 0:
+        if fields:
+            
+            options = {}
+            for field in fields:
+                if (
+                    field["options"] and
+                    isinstance(field["options"], str) and
+                    field["options"][0] == "{"
+                ):
+                    options[field["fieldname"]] = field["options"]
+            
+            options = to_json_if_valid(options) 
+            options = "window.ba_options = " + options + ";"
+            context.script = "\n\n".join([options, context.get("script", "")])
+            
             app_name = "frappe_better_attach_control"
             
             try:

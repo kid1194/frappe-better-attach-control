@@ -43,6 +43,21 @@ def get_options(doctype, name):
     if options and isinstance(options, str):
         return options
     
+    options = frappe.db.get_value(
+        "Web Form Field",
+        {
+            "fieldname": name,
+            "parent": doctype,
+            "parenttype": "Web Form",
+            "parentfield": "web_form_fields",
+            "fieldtype": ["in", ["Attach", "Attach Image"]]
+        },
+        "options"
+    )
+    
+    if options and isinstance(options, str):
+        return options
+    
     send_console_log({
         "message": "Empty or invalid field options",
         "data": [doctype, name, options]

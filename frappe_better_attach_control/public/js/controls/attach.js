@@ -264,6 +264,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             || this.df.parenttype === 'Web Form'
             || this.df.is_web_form
             || (this.doc && this.doc.web_form_name);
+        
+        if (this._is_webform && !isEmpty(window.ba_options)) {
+            if (isString(window.ba_options))
+                window.ba_options = parseJson(window.ba_options, {});
+            if (isPlainObject(window.ba_options))
+                this.df.options = window.ba_options[this.df.fieldname] || this.df.options;
+        }
+        
         this._df_options = this.df.options;
         this._native_options = false;
         this._options = null;
