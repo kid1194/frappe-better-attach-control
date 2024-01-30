@@ -19,7 +19,7 @@ def website_context(context):
         try:
             fields = frappe.get_all(
                 "Web Form Field",
-                fields=["fieldname", "options"]
+                fields=["fieldname", "options"],
                 filters={
                     "parent": context.doc.name,
                     "parenttype": "Web Form",
