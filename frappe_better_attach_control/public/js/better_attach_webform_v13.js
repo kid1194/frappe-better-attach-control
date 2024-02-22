@@ -1963,7 +1963,7 @@
       } else {
         var me = this;
         request(
-          "get_options",
+          "field.get_options",
           {
             doctype: this._doctype,
             name: this.df.fieldname
