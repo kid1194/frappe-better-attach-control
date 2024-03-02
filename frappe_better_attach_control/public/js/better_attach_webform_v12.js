@@ -1763,6 +1763,7 @@
               opts.restrictions.allowed_file_types
             ));
           var extra2 = [];
+          if (!opts.extra) opts.extra = {};
           each(opts.extra.allowed_file_types, function(v) {
             if (isRegExp(v) && is_ext_image("" + v.source) || isString(v) && is_ext_image(v))
               extra2.push(v);

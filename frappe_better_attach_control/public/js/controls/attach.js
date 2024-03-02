@@ -122,6 +122,7 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
                     opts.restrictions.allowed_file_types = to_images_list(toArray(
                         opts.restrictions.allowed_file_types
                     ));
+                if (!opts.extra) opts.extra = {};
                 each(opts.extra.allowed_file_types, function(v) {
                     if (
                         (isRegExp(v) && is_ext_image('' + v.source))

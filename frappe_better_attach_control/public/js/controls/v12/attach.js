@@ -113,6 +113,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
                         opts.restrictions.allowed_file_types
                     ));
                 var extra = [];
+                if (!opts.extra) opts.extra = {};
                 each(opts.extra.allowed_file_types, function(v) {
                     if (
                         (isRegExp(v) && is_ext_image('' + v.source))

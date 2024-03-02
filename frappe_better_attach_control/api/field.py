@@ -9,9 +9,6 @@ import frappe
 from .common import send_console_log
 
 
-_FIELD_DOCTYPE_ = "DocField"
-
-
 @frappe.whitelist(methods=["POST"], allow_guest=True)
 def get_options(doctype, name):
     if not doctype or not isinstance(doctype, str):
@@ -28,14 +25,28 @@ def get_options(doctype, name):
         })
         return ""
     
+    fieldtypes = ["in", ["Attach", "Attach Image"]]
     options = frappe.db.get_value(
-        _FIELD_DOCTYPE_,
+        "DocField",
         {
             "fieldname": name,
             "parent": doctype,
             "parenttype": "DocType",
             "parentfield": "fields",
-            "fieldtype": ["in", ["Attach", "Attach Image"]]
+            "fieldtype": fieldtypes
+        },
+        "options"
+    )
+    
+    if options and isinstance(options, str):
+        return options
+    
+    options = frappe.db.get_value(
+        "Custom Field",
+        {
+            "fieldname": name,
+            "dt": doctype,
+            "fieldtype": fieldtypes
         },
         "options"
     )
@@ -50,7 +61,7 @@ def get_options(doctype, name):
             "parent": doctype,
             "parenttype": "Web Form",
             "parentfield": "web_form_fields",
-            "fieldtype": ["in", ["Attach", "Attach Image"]]
+            "fieldtype": fieldtypes
         },
         "options"
     )
