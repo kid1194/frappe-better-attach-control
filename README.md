@@ -5,6 +5,11 @@ It supports RTL layout and dark mode out of the box.
 
 ⚠️ **v2 is still in BETA stage** ⚠️
 
+![v2 Beta15](https://img.shields.io/badge/v2_Beta15-2024/05/02-green?style=plastic)
+
+**Apologies in advance for any problem or bug you face with this module.**
+**Please report any problem or bug you face so it can be fixed.**
+
 ---
 
 <p align="center">
@@ -28,10 +33,11 @@ It supports RTL layout and dark mode out of the box.
 ### Special Thanks 
 **A simple display of gratitude and appreciation to those who provided helped and kind support.**
 #### Version 2
-- [MohsinAli](https://github.com/mohsinalimat) (Testing - Debugging - Bug Fixing)
-- [Robert C](https://github.com/robert1112) (Testing - Debugging)
+- [![MohsinAli](https://img.shields.io/badge/MohsinAli-Debug_%7C_Test_%7C_Fix-red?style=plastic)](https://github.com/mohsinalimat)
+- [![Robert C](https://img.shields.io/badge/Robert_C-Debug_%7C_Test-blue?style=plastic)](https://github.com/robert1112)
+- [![NirajRegmi](https://img.shields.io/badge/NirajRegmi-Debug_%7C_Test-orange?style=plastic)](https://github.com/NirajRegmi)
 #### Version 1
-- [CA. B.C.Chechani](https://github.com/chechani) (Testing - Debugging)
+- [![CA. B.C.Chechani](https://img.shields.io/badge/CA._B.C.Chechani-Debug_%7C_Test-green?style=plastic)](https://github.com/chechani)
 
 ---
 
@@ -121,7 +127,7 @@ bench build --app frappe_better_attach_control
 bench --site [sitename] migrate
 ```
 
-6. (Optional) Restart bench
+6. (Optional) Restart bench to clear cache
 
 ```
 bench restart
@@ -146,7 +152,7 @@ bench --site [sitename] uninstall-app frappe_better_attach_control
 bench remove-app frappe_better_attach_control
 ```
 
-4. (Optional) Restart bench
+4. (Optional) Restart bench to clear cache
 
 ```
 bench restart
@@ -189,11 +195,9 @@ You can't modify the original fields of a doctype, so create a new field or clon
 ### Available JavaScript Methods
 | Method | Description |
 | :--- | :--- |
-| **enable_reload()** | Allow reloading attachments and show the reload button (🔶Frappe >= v13.0.0). |
-| **disable_reload()** | Deny reloading attachments and hide reload button (🔶Frappe >= v13.0.0). |
-| **enable_remove()** | Allow removing and clearing attachments and show the clear and remove buttons. |
-| **disable_remove()** | Deny removing and clearing attachments and hide the clear and remove buttons. |
-| **set_options(JSON)** | Set or change the plugin current options.  |
+| **toggle_reload(allow: Boolean !Optional)** | Allow/Deny reloading attachments and toggle the reload button (🔶Frappe >= v13.0.0). |
+| **toggle_remove(allow: Boolean !Optional)** | Allow/Deny removing and clearing attachments and toggle the clear and remove buttons. |
+| **set_options(options: JSON Object)** | Set or change the plugin options.  |
 
 ---
 

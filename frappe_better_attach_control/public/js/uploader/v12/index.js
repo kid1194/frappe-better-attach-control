@@ -1,28 +1,18 @@
 /*
-*  Frappe Better Attach Control © 2023
+*  Frappe Better Attach Control © 2024
 *  Author:  Ameen Ahmed
 *  Company: Level Up Marketing & Software Development Services
 *  Licence: Please refer to LICENSE file
 */
 
 
-import {
-    isObject,
-    isPlainObject,
-    isEmpty,
-    isRegExp,
-    error
-} from './../../utils';
-import {
-    get_filename,
-    get_file_ext,
-    get_file_type
-} from './../../filetypes';
+import Helpers from './../../utils';
+import Filetype from './../../filetypes';
 
 
 frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
     constructor(opts) {
-        opts = isPlainObject(opts) ? opts : {};
+        opts = Helpers.isPlainObject(opts) ? opts : {};
         var extra = opts.extra || {};
         delete opts.extra;
         super(opts);
@@ -36,7 +26,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             if (!show_file_browser || !up.$refs.file_browser) return;
             me._override_file_browser(
                 up.$refs.file_browser,
-                !isEmpty(opts.restrictions)
+                !Helpers.isEmpty(opts.restrictions)
                 ? opts.restrictions
                 : {
                     max_file_size: null,
@@ -46,33 +36,31 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 extra
             );
         });
-        if (!isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
+        if (!Helpers.isEmpty(opts.restrictions)) up.restrictions.as_public = !!opts.restrictions.as_public;
         up.dropfiles = function(e) {
             up.is_dragging = false;
-            if (isObject(e) && isObject(e.dataTransfer))
+            if (Helpers.isObject(e) && Helpers.isObject(e.dataTransfer))
                 up.add_files(e.dataTransfer.files);
         };
         up.check_restrictions = function(file) {
             var max_file_size = up.restrictions.max_file_size,
-            { allowed_file_types = [], allowed_filename } = up._extra_restrictions,
+            {allowed_file_types = [], allowed_filename} = up._extra_restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(allowed_file_types)) {
+            if (!Helpers.isEmpty(allowed_file_types))
                 is_correct_type = allowed_file_types.some(function(type) {
-                    if (isRegExp(type)) return file.type && type.test(file.type);
+                    if (Helpers.isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
                     return false;
                 });
-            }
-            if (max_file_size && file.size != null && file.size) {
+            if (max_file_size && file.size != null && file.size)
                 valid_file_size = file.size < max_file_size;
-            }
             if (allowed_filename) {
-                if (isRegExp(allowed_filename)) {
+                if (Helpers.isRegExp(allowed_filename)) {
                     valid_filename = file.name.match(allowed_filename);
-                } else if (!isEmpty(allowed_filename)) {
+                } else if (!Helpers.isEmpty(allowed_filename)) {
                     valid_filename = allowed_filename === file.name;
                 }
             }
@@ -117,16 +105,16 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
             });
         };
         up.prepare_files = function(file_array) {
-            var is_single = isPlainObject(file_array),
+            var is_single = Helpers.isPlainObject(file_array),
             files = is_single ? [file_array] : Array.from(file_array);
             files = files.map(function(f) {
-                if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
-                if (f.type == null) f.type = get_file_type(get_file_ext(f.file_url)) || '';
+                if (f.name == null) f.name = f.file_name || Filetype.get_filename(f.file_url);
+                if (f.type == null) f.type = Filetype.get_file_type(Filetype.get_file_ext(f.file_url)) || '';
                 if (f.size == null) f.size = 0;
                 return f;
             });
             files = files.filter(up.check_restrictions);
-            if (isEmpty(files)) return !is_single ? [] : null;
+            if (Helpers.isEmpty(files)) return !is_single ? [] : null;
             files = files.map(function(file) {
                 var is_image =  file.type.startsWith('image');
                 return {
@@ -162,7 +150,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         up.upload_via_web_link = function() {
             var file_url = up.$refs.web_link.url;
             if (!file_url) {
-                error('Invalid URL');
+                Helpers.error('Invalid URL');
                 return Promise.reject();
             }
             file_url = decodeURI(file_url);
@@ -176,25 +164,23 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
         fb.check_restrictions = function(file) {
             if (file.is_folder) return true;
             var max_file_size = fb._restrictions.max_file_size,
-            { allowed_file_types = [], allowed_filename } = fb._extra_restrictions,
+            {allowed_file_types = [], allowed_filename} = fb._extra_restrictions,
             is_correct_type = true,
             valid_file_size = true,
             valid_filename = true;
-            if (!isEmpty(allowed_file_types)) {
+            if (!Helpers.isEmpty(allowed_file_types))
                 is_correct_type = allowed_file_types.some(function(type) {
-                    if (isRegExp(type)) return file.type && type.test(file.type);
+                    if (Helpers.isRegExp(type)) return file.type && type.test(file.type);
                     if (type.includes('/')) return file.type && file.type === type;
                     if (type[0] === '.') return (file.name || file.file_name).endsWith(type);
                     return false;
                 });
-            }
-            if (max_file_size && file.size != null && file.size) {
+            if (max_file_size && file.size != null && file.size)
                 valid_file_size = file.size < max_file_size;
-            }
             if (allowed_filename) {
-                if (isRegExp(allowed_filename)) {
+                if (Helpers.isRegExp(allowed_filename)) {
                     valid_filename = file.name.match(allowed_filename);
-                } else if (!isEmpty(allowed_filename)) {
+                } else if (!Helpers.isEmpty(allowed_filename)) {
                     valid_filename = allowed_filename === file.name;
                 }
             }
@@ -227,10 +213,10 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 {folder}
             ).then(function(r) {
                 var files = r.message || [];
-                if (!isEmpty(files)) {
+                if (!Helpers.isEmpty(files)) {
                     files = files.map(function(f) {
-                        if (f.name == null) f.name = f.file_name || get_filename(f.file_url);
-                        if (f.type == null) f.type = get_file_type(get_file_ext(f.file_url)) || '';
+                        if (f.name == null) f.name = f.file_name || Filetype.get_filename(f.file_url);
+                        if (f.type == null) f.type = Filetype.get_file_type(Filetype.get_file_ext(f.file_url)) || '';
                         if (f.size == null) f.size = 0;
                         return f;
                     });

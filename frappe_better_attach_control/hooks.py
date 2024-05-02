@@ -1,4 +1,4 @@
-# Frappe Better Attach Control © 2023
+# Frappe Better Attach Control © 2024
 # Author:  Ameen Ahmed
 # Company: Level Up Marketing & Software Development Services
 # Licence: Please refer to LICENSE file
@@ -18,33 +18,49 @@ app_email = "kid1194@gmail.com"
 app_license = "MIT"
 
 
-is_frappe_above_v13 = int(frappe_version.split('.')[0]) > 13
-is_frappe_above_v12 = int(frappe_version.split('.')[0]) > 12
+is_frappe_above_v13 = int(frappe_version.split(".")[0]) > 13
+is_frappe_above_v12 = int(frappe_version.split(".")[0]) > 12
 
 
 app_include_css = [
-    'better_attach.bundle.css'
+    "better_attach.bundle.css"
 ] if is_frappe_above_v13 else [
-    '/assets/frappe_better_attach_control/css/better_attach.css'
+    "/assets/frappe_better_attach_control/css/better_attach.css"
 ]
+
+
 better_webform_include_css = [
-    '/assets/frappe_better_attach_control/css/better_attach.bundle.css'
+    "/assets/frappe_better_attach_control/css/better_attach.bundle.css"
 ]
 
 
 app_include_js = [
-    'better_attach.bundle.js'
+    "better_attach.bundle.js"
 ] if is_frappe_above_v13 else ([
-    '/assets/frappe_better_attach_control/js/better_attach.js'
+    "/assets/frappe_better_attach_control/js/better_attach_v13.bundle.js"
 ] if is_frappe_above_v12 else [
-    '/assets/frappe_better_attach_control/js/better_attach_v12.js'
+    "/assets/frappe_better_attach_control/js/better_attach_v12.bundle.js"
 ])
+
+
 better_webform_include_js = [
-    '/assets/frappe_better_attach_control/js/better_attach_webform.js'
+    "/assets/frappe_better_attach_control/js/utils/index.js",
+    "/assets/frappe_better_attach_control/js/filetypes/index.js",
+    "/assets/frappe_better_attach_control/js/uploader/index.js",
+    "/assets/frappe_better_attach_control/js/controls/attach.js",
+    "/assets/frappe_better_attach_control/js/controls/attach_image.js"
 ] if is_frappe_above_v13 else ([
-    '/assets/frappe_better_attach_control/js/better_attach_webform_v13.js'
+    "/assets/frappe_better_attach_control/js/utils/index.js",
+    "/assets/frappe_better_attach_control/js/filetypes/index.js",
+    "/assets/frappe_better_attach_control/js/uploader/v13/index.js",
+    "/assets/frappe_better_attach_control/js/controls/v13/attach.js",
+    "/assets/frappe_better_attach_control/js/controls/v13/attach_image.js"
 ] if is_frappe_above_v12 else [
-    '/assets/frappe_better_attach_control/js/better_attach_webform_v12.js'
+    "/assets/frappe_better_attach_control/js/utils/index.js",
+    "/assets/frappe_better_attach_control/js/filetypes/index.js",
+    "/assets/frappe_better_attach_control/js/uploader/v12/index.js",
+    "/assets/frappe_better_attach_control/js/controls/v12/attach.js",
+    "/assets/frappe_better_attach_control/js/controls/v12/attach_image.js"
 ])
 
 

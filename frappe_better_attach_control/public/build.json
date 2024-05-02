@@ -1,17 +1,17 @@
 {
-  "frappe_better_attach_control/js/better_attach.js": [
-    "public/js/controls/v13/attach.js",
-    "public/js/controls/v13/attach_image.js",
+  "frappe_better_attach_control/js/better_attach_v13.bundle.js": [
+    "public/js/utils/index.js",
+    "public/js/filetypes/index.js",
     "public/js/uploader/v13/index.js",
-    "public/js/filetypes/index.js",
-    "public/js/utils/index.js"
+    "public/js/controls/v13/attach.js",
+    "public/js/controls/v13/attach_image.js"
   ],
-  "frappe_better_attach_control/js/better_attach_v12.js": [
-    "public/js/controls/v12/attach.js",
-    "public/js/controls/v12/attach_image.js",
-    "public/js/uploader/v12/index.js",
+  "frappe_better_attach_control/js/better_attach_v12.bundle.js": [
+    "public/js/utils/index.js",
     "public/js/filetypes/index.js",
-    "public/js/utils/index.js"
+    "public/js/uploader/v12/index.js",
+    "public/js/controls/v12/attach.js",
+    "public/js/controls/v12/attach_image.js"
   ],
   "frappe_better_attach_control/css/better_attach.css": [
       "public/css/better_attach.bundle.css"

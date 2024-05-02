@@ -1,18 +1,15 @@
-# Frappe Better Attach Control © 2023
+# Frappe Better Attach Control © 2024
 # Author:  Ameen Ahmed
 # Company: Level Up Marketing & Software Development Services
 # Licence: Please refer to LICENSE file
 
 
 import frappe
-from frappe import (
-    _,
-    is_whitelisted,
-    __version__ as frappe_version
-)
+from frappe import _, is_whitelisted
 from frappe.utils import cint
 
 from .common import (
+    is_version_gt,
     parse_json_if_valid,
     send_console_log
 )
@@ -36,12 +33,10 @@ _ALLOWED_MIMETYPES_ = (
 
 @frappe.whitelist(allow_guest=True)
 def upload_file():
-    version = int(frappe_version.split('.')[0])
-    
     user = None
     ignore_permissions = False
     
-    if version > 12:
+    if is_version_gt(12):
         if frappe.session.user == "Guest":
             if frappe.get_system_settings("allow_guests_to_upload_files"):
                 ignore_permissions = True
@@ -63,11 +58,11 @@ def upload_file():
     optimize = False
     content = None
     
-    if version > 13:
+    if is_version_gt(13):
         filename = frappe.form_dict.file_name
         optimize = frappe.form_dict.optimize
     
-    if version > 12:
+    if is_version_gt(12):
         import mimetypes
     
     if "file" in files:
@@ -75,7 +70,7 @@ def upload_file():
         content = file.stream.read()
         filename = file.filename
         
-        if version > 13:
+        if is_version_gt(13):
             content_type = mimetypes.guess_type(filename)[0]
             if optimize and content_type.startswith("image/"):
                 args = {"content": content, "content_type": content_type}
@@ -90,7 +85,7 @@ def upload_file():
     frappe.local.uploaded_file = content
     frappe.local.uploaded_filename = filename
     
-    if version > 13:
+    if is_version_gt(13):
         if not file_url and content is not None and (
             frappe.session.user == "Guest" or (user and not user.has_desk_access())
         ):
@@ -98,7 +93,7 @@ def upload_file():
             if filetype not in _ALLOWED_MIMETYPES_:
                 frappe.throw(_("You can only upload JPG, PNG, PDF, TXT or Microsoft documents."))
     
-    elif version > 12:
+    elif is_version_gt(12):
         if not file_url and frappe.session.user == "Guest" or (user and not user.has_desk_access()):
             filetype = mimetypes.guess_type(filename)[0]
 
@@ -118,7 +113,7 @@ def upload_file():
             "is_private": cint(is_private),
             "content": content,
         })
-        if version > 12:
+        if is_version_gt(12):
             ret.save(ignore_permissions=ignore_permissions)
         else:
             ret.save()

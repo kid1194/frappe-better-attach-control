@@ -1,4 +1,4 @@
-# Frappe Better Attach Control © 2022
+# Frappe Better Attach Control © 2024
 # Author:  Ameen Ahmed
 # Company: Level Up Marketing & Software Development Services
 # Licence: Please refer to LICENSE file
@@ -7,12 +7,26 @@
 import json
 
 import frappe
-from frappe import _, _dict
+from frappe import __version__, _, _dict
+
+
+__frappe_base_ver__ = int(__version__.split(".")[0])
+
+
+def is_version_gt(num: int):
+    return __frappe_base_ver__ > num
+
+
+def is_version_lt(num: int):
+    return __frappe_base_ver__ < num
 
 
 def error(msg, throw=True):
     title = "Better Attach Control"
-    frappe.log_error(title, msg)
+    if is_version_lt(14):
+        frappe.log_error(text, title)
+    else:
+        frappe.log_error(title, text)
     if throw:
         frappe.throw(msg, title=title)
 
@@ -54,7 +68,6 @@ def to_json_if_valid(data, default=None):
     
     if default is None:
         default = data
-    
     try:
         return json.dumps(data)
     except Exception:
@@ -67,7 +80,6 @@ def parse_json_if_valid(data, default=None):
     
     if default is None:
         default = data
-    
     try:
         return json.loads(data)
     except Exception:
