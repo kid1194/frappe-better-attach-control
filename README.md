@@ -5,7 +5,7 @@ It supports RTL layout and dark mode out of the box.
 
 ⚠️ **v2 is still in BETA stage** ⚠️
 
-![v2 Beta15](https://img.shields.io/badge/v2_Beta15-2024/05/02-green?style=plastic)
+![v2 Beta16](https://img.shields.io/badge/v2_Beta16-2024/05/30-green?style=plastic)
 
 **Apologies in advance for any problem or bug you face with this module.**
 **Please report any problem or bug you face so it can be fixed.**
@@ -177,16 +177,17 @@ You can't modify the original fields of a doctype, so create a new field or clon
 ### Available Field Options
 | Option | Description |
 | :--- | :--- |
-| **dialog_title** 🔴 | Upload dialog title to be displayed ️(🔶Frappe >= v14.0.0).<br /><br />🔹Example: **"Upload Images"**<br />🔹Default: **"Upload"** |
+| **dialog_title** | Upload dialog title to be displayed ️(🔶Frappe >= v14.0.0).<br /><br />🔹Example: **"Upload Images"**<br />🔹Default: **"Upload"** |
 | **upload_notes** | Upload text to be displayed.<br /><br />🔹Example: **"Only images and videos, with maximum size of 2MB, are allowed to be uploaded"**<br />🔹Default: **""** |
-| **disable_file_browser** 🔴 | Disable file browser uploads.<br /><br />⚠️ *(File browser is always disabled in Web Form)*<br /><br />🔹Default: **false** |
+| **disable_auto_save** 🔴 | Disable form auto save after upload.<br /><br />🔹Default: **false** |
+| **disable_file_browser** | Disable file browser uploads.<br /><br />⚠️ *(File browser is always disabled in Web Form)*<br /><br />🔹Default: **false** |
 | **allow_multiple** | Allow multiple uploads.<br /><br />⚠️ *(Field value is a JSON array of files url)*<br /><br />🔹Default: **false** |
 | **max_file_size** | Maximum file size (in bytes) that is allowed to be uploaded.<br /><br />🔹Example: **2048** for **2KB**<br />🔹Default: **Value of maximum file size in Frappe's settings** |
 | **allowed_file_types** | Array of allowed file types (mimes) or extensions to upload. Prefix escaped RegExp string types with **$**.<br /><br />⚠️ *(File extensions must have a leading dot ".")*<br />⚠️ *(RegExp string types will not be used to in HTML accept attribute)*<br /><br />🔹Example: **["image/*", "video/*", ".pdf", ".doc", "$audio\/([a-z]+)"]**<br />🔹Default: **null** or **["image/*"]** |
 | **max_number_of_files** | Maximum number of files allowed to be uploaded if multiple upload is allowed.<br /><br />⚠️ *(Bypassing the maximum attachments of doctype might not work)*<br /><br />🔹Example: **4**<br />🔹Default: **Value of maximum attachments set for the doctype** |
 | **crop_image_aspect_ratio** | Crop aspect ratio for images (🔶Frappe >= v14.0.0).<br /><br />🔹Example: **1** or **16/9** or **4/3**<br />🔹Default: **null** |
 | **as_public** | Force uploads to be saved in public folder by default.<br /><br />🔹Default: **false** |
-| **allowed_filename** 🔴 | Only allow files that match a specific file name to be uploaded.<br /><br />🔹Example: (String)**"picture.png"** or (RegExp String)**"/picture\-([0-9]+)\.png/"**<br />🔹Default: **null** |
+| **allowed_filename** | Only allow files that match a specific file name to be uploaded.<br /><br />🔹Example: (String)**"picture.png"** or (RegExp String)**"/picture\-([0-9]+)\.png/"**<br />🔹Default: **null** |
 | **allow_reload** | Allow reloading attachments (🔶Frappe >= v13.0.0).<br /><br />🔶 Affect the visibility of the reload button.🔶<br /><br />🔹Default: **true** |
 | **allow_remove** | Allow removing and clearing attachments.<br /><br />🔶 Affect the visibility of the remove and clear buttons.🔶<br /><br />🔹Default: **true** |
 
@@ -195,6 +196,7 @@ You can't modify the original fields of a doctype, so create a new field or clon
 ### Available JavaScript Methods
 | Method | Description |
 | :--- | :--- |
+| **auto_save(enable: Boolean)** | Enable/Disable form auto save after upload. |
 | **toggle_reload(allow: Boolean !Optional)** | Allow/Deny reloading attachments and toggle the reload button (🔶Frappe >= v13.0.0). |
 | **toggle_remove(allow: Boolean !Optional)** | Allow/Deny removing and clearing attachments and toggle the clear and remove buttons. |
 | **set_options(options: JSON Object)** | Set or change the plugin options.  |

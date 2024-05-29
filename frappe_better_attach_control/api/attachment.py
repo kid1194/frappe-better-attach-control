@@ -5,14 +5,6 @@
 
 
 import frappe
-from frappe import _, is_whitelisted
-from frappe.utils import cint
-
-from .common import (
-    is_version_gt,
-    parse_json_if_valid,
-    send_console_log
-)
 
 
 _FILE_DOCTYPE_ = "File"
@@ -33,6 +25,8 @@ _ALLOWED_MIMETYPES_ = (
 
 @frappe.whitelist(allow_guest=True)
 def upload_file():
+    from frappe_better_attach_control.version import is_version_gt
+    
     user = None
     ignore_permissions = False
     
@@ -91,6 +85,8 @@ def upload_file():
         ):
             filetype = mimetypes.guess_type(filename)[0]
             if filetype not in _ALLOWED_MIMETYPES_:
+                from frappe import _
+                
                 frappe.throw(_("You can only upload JPG, PNG, PDF, TXT or Microsoft documents."))
     
     elif is_version_gt(12):
@@ -99,9 +95,11 @@ def upload_file():
 
     if method:
         method = frappe.get_attr(method)
-        is_whitelisted(method)
+        frappe.is_whitelisted(method)
         return method()
     else:
+        from frappe.utils import cint
+        
         ret = frappe.get_doc({
             "doctype": _FILE_DOCTYPE_,
             "attached_to_doctype": doctype,
@@ -124,10 +122,12 @@ def upload_file():
 @frappe.whitelist(methods=["POST"], allow_guest=True)
 def remove_files(files):
     if files and isinstance(files, str):
+        from .common import parse_json_if_valid
+        
         files = parse_json_if_valid(files)
     
     if not files or not isinstance(files, list):
-        send_console_log({
+        _send_console_log({
             "message": "Invalid files list",
             "data": files
         })
@@ -148,7 +148,7 @@ def remove_files(files):
             file_names.append(file)
     
     if not file_urls and not file_names:
-        send_console_log({
+        _send_console_log({
             "message": "Invalid files path",
             "data": files
         })
@@ -176,8 +176,15 @@ def remove_files(files):
         
         return 1
     
-    send_console_log({
+    _send_console_log({
         "message": "Files not found",
         "data": files
     })
     return 3
+
+
+# [Internal]
+def _send_console_log(data):
+    from .common import send_console_log
+    
+    send_console_log(data)

@@ -92,6 +92,7 @@ frappe.ui.FileUploader = class FileUploader extends frappe.ui.FileUploader {
                 'File skipped because it exceeds the allowed specified limit of ' + max_number_of_files + ' uploads',
                 file
             );
+            var MSG;
             if (up.doctype) {
                 MSG = __('File "{0}" was skipped because only {1} uploads are allowed for DocType "{2}"',
                     [file.name, max_number_of_files, up.doctype]);

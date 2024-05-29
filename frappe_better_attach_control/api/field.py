@@ -6,20 +6,18 @@
 
 import frappe
 
-from .common import send_console_log
-
 
 @frappe.whitelist(methods=["POST"], allow_guest=True)
 def get_options(doctype, name, webform):
     if not doctype or not isinstance(doctype, str):
-        send_console_log({
+        _send_console_log({
             "message": "Empty or invalid field doctype",
             "data": [doctype, name]
         })
         return ""
     
     if not name or not isinstance(name, str):
-        send_console_log({
+        _send_console_log({
             "message": "Empty or invalid field name",
             "data": [doctype, name]
         })
@@ -67,8 +65,15 @@ def get_options(doctype, name, webform):
     if options and isinstance(options, str):
         return options
     
-    send_console_log({
+    _send_console_log({
         "message": "Empty or invalid field options",
         "data": [doctype, name, options]
     })
     return ""
+
+
+# [Internal]
+def _send_console_log(data):
+    from .common import send_console_log
+    
+    send_console_log(data)

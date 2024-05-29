@@ -8,11 +8,8 @@ import os
 
 import frappe
 from frappe import _
-from frappe.utils import flt, cint, cstr, get_url, get_files_path
-from frappe.utils.file_manager import is_safe_path
+from frappe.utils import cint, cstr, get_url
 from frappe.core.doctype.file.file import URL_PREFIXES
-
-from .common import error, get_cached_value
 
 
 _FILE_DOCTYPE_ = "File"
@@ -48,6 +45,8 @@ def _get_files_in_folder(folder, start, page_length):
     )
     
     if folder == "Home":
+        from .common import get_cached_value
+        
         attachment_folder = get_cached_value(
             _FILE_DOCTYPE_,
             "Home/Attachments",
@@ -87,6 +86,8 @@ def _prepare_files(files):
         file = files[i]
         file["size"] = 0
         if not cint(file["is_folder"]):
+            from frappe.utils import flt
+            
             file["size"] = flt(file["file_size"])
             if not file["size"]:
                 try:
@@ -114,21 +115,34 @@ def _get_full_path(file):
             file_path = f"/files/{file_path}"
     
     if file_path.startswith("/private/files/"):
+        from frappe.utils import get_files_path
+        
         file_path = get_files_path(*file_path.split("/private/files/", 1)[1].split("/"), is_private=1)
     
     elif file_path.startswith("/files/"):
+        from frappe.utils import get_files_path
+        
         file_path = get_files_path(*file_path.split("/files/", 1)[1].split("/"))
     
     elif file_path.startswith(URL_PREFIXES):
         pass
     
     elif not file["file_url"]:
-        error(_("There is some problem with the file url: {0}").format(file_path))
+        _error(_("There is some problem with the file url: {0}").format(file_path))
+    
+    from frappe.utils.file_manager import is_safe_path
     
     if not is_safe_path(file_path):
-        error(_("Cannot access file path {0}").format(file_path))
+        _error(_("Cannot access file path {0}").format(file_path))
     
     if os.path.sep in file["file_name"]:
-        error(_("File name cannot have {0}").format(os.path.sep))
+        _error(_("File name cannot have {0}").format(os.path.sep))
     
     return file_path
+
+
+# [Internal]
+def _error(msg):
+    from .common import error
+    
+    error(msg)

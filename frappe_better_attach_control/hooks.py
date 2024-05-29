@@ -4,8 +4,7 @@
 # Licence: Please refer to LICENSE file
 
 
-from . import __version__ as app_version
-from frappe import __version__ as frappe_version
+from .version import is_version_gt
 
 
 app_name = "frappe_better_attach_control"
@@ -18,13 +17,9 @@ app_email = "kid1194@gmail.com"
 app_license = "MIT"
 
 
-is_frappe_above_v13 = int(frappe_version.split(".")[0]) > 13
-is_frappe_above_v12 = int(frappe_version.split(".")[0]) > 12
-
-
 app_include_css = [
     "better_attach.bundle.css"
-] if is_frappe_above_v13 else [
+] if is_version_gt(13) else [
     "/assets/frappe_better_attach_control/css/better_attach.css"
 ]
 
@@ -36,9 +31,9 @@ better_webform_include_css = [
 
 app_include_js = [
     "better_attach.bundle.js"
-] if is_frappe_above_v13 else ([
+] if is_version_gt(13) else ([
     "/assets/frappe_better_attach_control/js/better_attach_v13.bundle.js"
-] if is_frappe_above_v12 else [
+] if is_version_gt(12) else [
     "/assets/frappe_better_attach_control/js/better_attach_v12.bundle.js"
 ])
 
@@ -49,13 +44,13 @@ better_webform_include_js = [
     "/assets/frappe_better_attach_control/js/uploader/index.js",
     "/assets/frappe_better_attach_control/js/controls/attach.js",
     "/assets/frappe_better_attach_control/js/controls/attach_image.js"
-] if is_frappe_above_v13 else ([
+] if is_version_gt(13) else ([
     "/assets/frappe_better_attach_control/js/utils/index.js",
     "/assets/frappe_better_attach_control/js/filetypes/index.js",
     "/assets/frappe_better_attach_control/js/uploader/v13/index.js",
     "/assets/frappe_better_attach_control/js/controls/v13/attach.js",
     "/assets/frappe_better_attach_control/js/controls/v13/attach_image.js"
-] if is_frappe_above_v12 else [
+] if is_version_gt(12) else [
     "/assets/frappe_better_attach_control/js/utils/index.js",
     "/assets/frappe_better_attach_control/js/filetypes/index.js",
     "/assets/frappe_better_attach_control/js/uploader/v12/index.js",

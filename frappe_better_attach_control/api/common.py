@@ -7,26 +7,17 @@
 import json
 
 import frappe
-from frappe import __version__, _, _dict
-
-
-__frappe_base_ver__ = int(__version__.split(".")[0])
-
-
-def is_version_gt(num: int):
-    return __frappe_base_ver__ > num
-
-
-def is_version_lt(num: int):
-    return __frappe_base_ver__ < num
+from frappe import _, _dict
 
 
 def error(msg, throw=True):
+    from frappe_better_attach_control.version import is_version_lt
+    
     title = "Better Attach Control"
     if is_version_lt(14):
-        frappe.log_error(text, title)
+        frappe.log_error(msg, title)
     else:
-        frappe.log_error(title, text)
+        frappe.log_error(title, msg)
     if throw:
         frappe.throw(msg, title=title)
 

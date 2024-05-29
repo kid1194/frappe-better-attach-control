@@ -163,6 +163,9 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this.set_input(Helpers.toArray(this.value));
     },
     // Custom Methods
+    auto_save: function(enable) {
+        this._disable_auto_save = enable ? false : true;
+    },
     toggle_reload: function(allow) {
         if (allow != null) this._allow_reload = !!allow;
         else this._allow_reload = !this._allow_reload;
@@ -174,14 +177,13 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._toggle_remove_button();
     },
     set_options: function(opts) {
+        if (Helpers.isString(opts) && opts.length) opts = Helpers.parseJson(opts, null);
         if (Helpers.isEmpty(opts) || !Helpers.isPlainObject(opts)) return;
         $.extend(true, this.df.options, opts);
         this._update_options();
     },
     // Private Methods
     _setup_control: function() {
-        if (this._is_better) return;
-        this._is_better = 1;
         this._doctype = (this.frm && this.frm.doctype)
             || this.doctype
             || (this.doc && this.doc.doctype)
@@ -204,6 +206,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         this._options = null;
         this._value = [];
         this._files = [];
+        this._disable_auto_save = false;
         this._allow_multiple = false;
         this._max_attachments = {};
         this._allow_reload = true;
@@ -233,8 +236,8 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
         tmp.allow_reload = Helpers.toBool(Helpers.ifNull(opts.allow_reload, true));
         tmp.allow_remove = Helpers.toBool(Helpers.ifNull(opts.allow_remove, true));
         Helpers.each([
-            ['upload_notes', 's'], ['allow_multiple', 'b'],
-            ['disable_file_browser', 'b'],
+            ['upload_notes', 's'], ['disable_auto_save', 'b'],
+            ['allow_multiple', 'b'], ['disable_file_browser', 'b'],
         ], function(k) {
             tmp.options[k[0]] = this._parse_options_val(opts[k[0]], k[1]);
         }, this);
@@ -293,6 +296,8 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
     },
     _reload_control: function(opts) {
         if (this.upload_options) this.upload_options = null;
+        
+        this._disable_auto_save = this._options && this._options.disable_auto_save;
         
         if (Helpers.ifNull(opts.allow_reload, true) !== this._allow_reload)
             this.toggle_reload(!this._allow_reload);
@@ -673,6 +678,7 @@ frappe.ui.form.ControlAttach = frappe.ui.form.ControlAttach.extend({
             });
     },
     _form_save: function() {
+        if (this._disable_auto_save) return;
         this.frm.doc.docstatus == 1 ? this.frm.save('Update') : this.frm.save();
     }
 });

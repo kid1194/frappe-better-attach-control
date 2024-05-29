@@ -115,7 +115,7 @@ var Helpers = {
         if (!this.isIteratable(data) || !this.isIteratable(base)) return data == base;
         var ret = true;
         this.each(data, function(v, k) {
-            if (!this.isEqual(y, base[k])) return (ret = false);
+            if (!this.isEqual(v, base[k])) return (ret = false);
         });
         return ret;
     },
