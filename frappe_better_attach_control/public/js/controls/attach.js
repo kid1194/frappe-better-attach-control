@@ -166,13 +166,14 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
         super.refresh();
         if (Helpers.isString(this.df.options))
             this.df.options = Helpers.parseJson(this.df.options, {});
-        if (!Helpers.isPlainObject(this.df.options)) this.df.options = {};
+        else if (!Helpers.isPlainObject(this.df.options)) this.df.options = {};
         if (!Helpers.isEqual(this.df.options, this._ls_options))
-            this.set_options(this.df.options);
+            this._update_options(true);
     }
     // Custom Methods
-    auto_save(enable) {
-        this._disable_auto_save = enable ? false : true;
+    toggle_auto_save(enable) {
+        if (enable != null) this._disable_auto_save = enable ? false : true;
+        else this._disable_auto_save = !this._disable_auto_save;
     }
     toggle_reload(allow) {
         if (allow != null) this._allow_reload = !!allow;
@@ -187,8 +188,10 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     set_options(opts) {
         if (Helpers.isString(opts) && opts.length) opts = Helpers.parseJson(opts, null);
         if (Helpers.isEmpty(opts) || !Helpers.isPlainObject(opts)) return;
-        $.extend(true, this.df.options, opts);
-        this._update_options();
+        opts = Helpers.merge(this.df.options, opts);
+        if (Helpers.isEqual(this.df.options, opts)) return;
+        this.df.options = opts;
+        this._update_options(true);
     }
     // Private Methods
     _setup_control() {
@@ -231,16 +234,37 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
             this.df.options = Helpers.parseJson(this.df.options, {});
         if (!Helpers.isPlainObject(this.df.options)) this.df.options = {};
     }
-    _update_options() {
-        this._ls_options = Helpers.deepClone(this.df.options);
-        let opts;
-        if (Helpers.isEmpty(this._ls_options)) opts = {};
-        else opts = this._parse_options(this._ls_options);
-        this._options = opts.options || null;
+    _update_options(force) {
+        if (!force && this._ls_options) return;
+        this._ls_options = !Helpers.isEmpty(this.df.options) ? Helpers.deepClone(this.df.options) : {};
+        let opts = {};
+        if (!Helpers.isEmpty(this._ls_options)) {
+            opts = this._parse_options(this._ls_options);
+            if (!opts.disabled) {
+                if (Helpers.isArray(this._ls_options.users) && this._ls_options.users.length) {
+                    let users = Helpers.filter(this._ls_options.users, function(v) {
+                        return this.isPlainObject(v) && (
+                            (this.isString(v.for) && v.for === frappe.session.user)
+                            || (this.isArray(v.for) && v.for.indexOf(frappe.session.user) >= 0)
+                        );
+                    });
+                    if (users.length) opts = Helpers.merge(opts, this._parse_options(users[0]));
+                } else if (Helpers.isArray(this._ls_options.roles)) {
+                    let roles = Helpers.filter(this._ls_options.roles, function(v) {
+                        return this.isPlainObject(v)
+                            && (this.isString(v.for) || this.isArray(v.for))
+                            && frappe.user.has_role(v.for);
+                    });
+                    if (roles.length) opts = Helpers.merge(opts, this._parse_options(roles[0]));
+                }
+            }
+        }
+        this._options = !opts.disabled ? (opts.options || null) : null;
         this._reload_control(opts);
     }
     _parse_options(opts) {
         var tmp = {options: {restrictions: {}, extra: {}}};
+        tmp.disabled = Helpers.toBool(Helpers.ifNull(opts.disabled, false));
         tmp.allow_reload = Helpers.toBool(Helpers.ifNull(opts.allow_reload, true));
         tmp.allow_remove = Helpers.toBool(Helpers.ifNull(opts.allow_remove, true));
         Helpers.each([
@@ -279,22 +303,24 @@ frappe.ui.form.ControlAttach = class ControlAttach extends frappe.ui.form.Contro
     }
     _parse_allowed_file_types(opts) {
         opts.extra.allowed_file_types = [];
-        if (Helpers.isEmpty(opts.restrictions.allowed_file_types)) return;
+        if (!opts.restrictions.allowed_file_types.length) return;
         opts.restrictions.allowed_file_types = Helpers.filter(
             opts.restrictions.allowed_file_types,
-            function(v) { return this.isRegExp(v) || (this.isString(v) && v.length); }
-        );
-        Helpers.each(opts.restrictions.allowed_file_types, function(t, i) {
-            if (this.isString(t)) {
-                if (t[0] === '$') t = new RegExp(t.substring(1));
-                else if (t.substring(t.length - 2) === '/*')
-                    t = new RegExp(t.substring(0, t.length - 1) + '/(.*?)');
+            function(v) {
+                if (this.isString(v)) {
+                    if (!v.length) return false;
+                    if (v[0] === '$') {
+                        opts.extra.allowed_file_types.push(new RegExp(v.substring(1)));
+                        return false;
+                    }
+                    if (v.substring(v.length - 2) === '/*')
+                        opts.extra.allowed_file_types.push(new RegExp(v.substring(0, v.length - 1) + '/(.*?)'));
+                    return true;
+                } else if (this.isRegExp(v)) {
+                    opts.extra.allowed_file_types.push(v);
+                }
+                return false;
             }
-            opts.extra.allowed_file_types.push(t);
-        });
-        opts.restrictions.allowed_file_types = Helpers.filter(
-            opts.restrictions.allowed_file_types,
-            function(v) { return this.isString(v) && v[0] !== '$'; }
         );
     }
     _toggle_remove_button() {

@@ -15,6 +15,7 @@ var Helpers = {
     $of: function(v, t) { return this.$type(v) === t; },
     $ofAny: function(v, t) { return t.split(' ').indexOf(this.$type(v)) >= 0; },
     $propOf: function(v, k) { return Object.prototype.hasOwnProperty.call(v, k); },
+    $fnStr: function(v) { return Function.prototype.toString.call(v); },
     
     // Common Checks
     isString: function(v) { return this.$of(v, 'String'); },
@@ -24,20 +25,26 @@ var Helpers = {
         return this.isNumber(v) && v >= 0 && v % 1 == 0 && v <= 9007199254740991;
     },
     isInteger: function(v) { return this.isNumber(v) && v === Number(parseInt(v)); },
+    isFunction: function(v) { return typeof v === 'function' || /(Function|^Proxy)$/.test(this.$type(v)); },
     isArrayLike: function(v) {
-        return v && !this.isString(v) && !$.isFunction(v) && !$.isWindow(v)
-        && this.isObjectLike(v) && !this.isInteger(v.nodeType) && this.isLength(v.length);
+        return this.isObjectLike(v) && !this.isFunction(v) && !this.$ofAny(v, 'String Window')
+        && v !== window && !/^(NodeList|HTML(\w+|)Collection)$/.test(this.$type(v))
+        && !this.isInteger(v.nodeType) && this.isLength(v.length);
     },
-    isFunction: function(v) { return v && $.isFunction(v); },
     
     // Checks
-    isArray: function(v) { return v && $.isArray(v); },
+    isArray: function(v) { return this.$of(v, 'Array'); },
     isObject: function(v) {
         return this.isObjectLike(v)
-            && this.isObjectLike(Object.getPrototypeOf(Object(v)) || {})
-            && !this.$ofAny(v, 'String Number Boolean Array RegExp Date URL');
+            && !this.$ofAny(v, 'String Number Boolean Array RegExp Date URL')
+            && this.isObjectLike(Object.getPrototypeOf(v));
     },
-    isPlainObject: function(v) { return v && $.isPlainObject(v); },
+    isPlainObject: function(v) {
+        if (!this.isObject(v)) return false;
+        let k = 'constructor'; v = Object.getPrototypeOf(v);
+        return v && this.$propOf(v, k) && this.isFunction(v[k])
+            && this.$fnStr(v[k]) === this.$fnStr(Object);
+    },
     isIteratable: function(v) { return this.isArrayLike(v) || this.isObject(v); },
     isEmpty: function(v) {
         if (v == null) return true;
@@ -103,7 +110,12 @@ var Helpers = {
     },
     deepClone: function(v) {
         if (!this.isIteratable(v)) return v;
-        var arr = this.isArrayLike(v),
+        var ret = this.toJson(v);
+        if (ret.length) {
+            ret = this.parseJson(ret, null);
+            if (this.isIteratable(ret)) return ret;
+        }
+        var arr = this.isArrayLike(v);
         ret = arr ? [] : {};
         this.each(v, function(y, x) {
             if (this.isIteratable(y)) y = this.deepClone(y);
@@ -111,8 +123,22 @@ var Helpers = {
         });
         return ret;
     },
+    merge: function(b) {
+        if (!this.isIteratable(b)) return arguments[1] || null;
+        b = this.deepClone(b);
+        this.each(arguments, function(a, i) {
+            i && this.each(a, function(y, x) {
+                if (this.isObject(y) && this.isObject(b[x])) y = this.merge(b[x], y);
+                if (!this.isArrayLike(b[x])) b[x] = y;
+                else if (!this.isArrayLike(y)) Array.prototype.push.call(b[x], y);
+                else Array.prototype.push.apply(b[x], y);
+            });
+        });
+        return b;
+    },
     isEqual: function(data, base) {
-        if (!this.isIteratable(data) || !this.isIteratable(base)) return data == base;
+        if (this.isIteratable(data) !== this.isIteratable(base)) return data == base;
+        if (this.isEmpty(data) && this.isEmpty(base)) return this.$type(data) === this.$type(base);
         var ret = true;
         this.each(data, function(v, k) {
             if (!this.isEqual(v, base[k])) return (ret = false);

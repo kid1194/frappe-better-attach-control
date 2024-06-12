@@ -5,7 +5,7 @@ It supports RTL layout and dark mode out of the box.
 
 ⚠️ **v2 is still in BETA stage** ⚠️
 
-![v2 Beta16](https://img.shields.io/badge/v2_Beta16-2024/05/30-green?style=plastic)
+![v2 Beta17](https://img.shields.io/badge/v2_Beta17-2024/06/13-green?style=plastic)
 
 **Apologies in advance for any problem or bug you face with this module.**
 **Please report any problem or bug you face so it can be fixed.**
@@ -35,9 +35,10 @@ It supports RTL layout and dark mode out of the box.
 #### Version 2
 - [![MohsinAli](https://img.shields.io/badge/MohsinAli-Debug_%7C_Test_%7C_Fix-red?style=plastic)](https://github.com/mohsinalimat)
 - [![Robert C](https://img.shields.io/badge/Robert_C-Debug_%7C_Test-blue?style=plastic)](https://github.com/robert1112)
-- [![NirajRegmi](https://img.shields.io/badge/NirajRegmi-Debug_%7C_Test-orange?style=plastic)](https://github.com/NirajRegmi)
+- [![NirajRegmi](https://img.shields.io/badge/NirajRegmi-Debug_%7C_Test-blue?style=plastic)](https://github.com/NirajRegmi)
+- [![galaxlabs](https://img.shields.io/badge/galaxlabs-Enhancement-a2eeef?style=plastic)](https://github.com/galaxlabs)
 #### Version 1
-- [![CA. B.C.Chechani](https://img.shields.io/badge/CA._B.C.Chechani-Debug_%7C_Test-green?style=plastic)](https://github.com/chechani)
+- [![CA. B.C.Chechani](https://img.shields.io/badge/CA._B.C.Chechani-Debug_%7C_Test-blue?style=plastic)](https://github.com/chechani)
 
 ---
 
@@ -179,7 +180,7 @@ You can't modify the original fields of a doctype, so create a new field or clon
 | :--- | :--- |
 | **dialog_title** | Upload dialog title to be displayed ️(🔶Frappe >= v14.0.0).<br /><br />🔹Example: **"Upload Images"**<br />🔹Default: **"Upload"** |
 | **upload_notes** | Upload text to be displayed.<br /><br />🔹Example: **"Only images and videos, with maximum size of 2MB, are allowed to be uploaded"**<br />🔹Default: **""** |
-| **disable_auto_save** 🔴 | Disable form auto save after upload.<br /><br />🔹Default: **false** |
+| **disable_auto_save** | Disable form auto save after upload.<br /><br />🔹Default: **false** |
 | **disable_file_browser** | Disable file browser uploads.<br /><br />⚠️ *(File browser is always disabled in Web Form)*<br /><br />🔹Default: **false** |
 | **allow_multiple** | Allow multiple uploads.<br /><br />⚠️ *(Field value is a JSON array of files url)*<br /><br />🔹Default: **false** |
 | **max_file_size** | Maximum file size (in bytes) that is allowed to be uploaded.<br /><br />🔹Example: **2048** for **2KB**<br />🔹Default: **Value of maximum file size in Frappe's settings** |
@@ -190,16 +191,22 @@ You can't modify the original fields of a doctype, so create a new field or clon
 | **allowed_filename** | Only allow files that match a specific file name to be uploaded.<br /><br />🔹Example: (String)**"picture.png"** or (RegExp String)**"/picture\-([0-9]+)\.png/"**<br />🔹Default: **null** |
 | **allow_reload** | Allow reloading attachments (🔶Frappe >= v13.0.0).<br /><br />🔶 Affect the visibility of the reload button.🔶<br /><br />🔹Default: **true** |
 | **allow_remove** | Allow removing and clearing attachments.<br /><br />🔶 Affect the visibility of the remove and clear buttons.🔶<br /><br />🔹Default: **true** |
+| **users** 🔴 | Array of custom options for a specific user or group of users.<br /><br />🔹Example: **[{"for": "Guest", "disabled": true}, {"for": ["Administrator", "user"], "allow_multiple": true}]**<br />🔹Default: **null** |
+| **roles** 🔴 | Array of custom options for a specific role or group of roles.<br />⚠️ *(Custom options for users is prioritized over roles.)*<br /><br />🔹Example: **[{"for": ["Administrator", "System"], "allow_multiple": true}]**<br />🔹Default: **null** |
+
+🔴 New - 🔶 Changed
 
 ---
 
 ### Available JavaScript Methods
 | Method | Description |
 | :--- | :--- |
-| **auto_save(enable: Boolean)** | Enable/Disable form auto save after upload. |
+| **toggle_auto_save(enable: Boolean !Optional)** 🔶 | Enable/Disable form auto save after upload. |
 | **toggle_reload(allow: Boolean !Optional)** | Allow/Deny reloading attachments and toggle the reload button (🔶Frappe >= v13.0.0). |
 | **toggle_remove(allow: Boolean !Optional)** | Allow/Deny removing and clearing attachments and toggle the clear and remove buttons. |
 | **set_options(options: JSON Object)** | Set or change the plugin options.  |
+
+🔴 New - 🔶 Changed
 
 ---
 
